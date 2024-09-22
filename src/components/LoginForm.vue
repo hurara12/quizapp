@@ -1,6 +1,7 @@
 <template>
   <div class="card shadow-sm p-4" style="max-width: 400px; width: 100%;">
     <h2 class="text-center mb-4">Login</h2>
+    <div v-if="alertMessage" :class="alertClass" role="alert">{{ alertMessage }}</div>
     <form @submit.prevent="handleLogin">
       <div class="mb-3">
         <label for="email" class="form-label">Email:</label>
@@ -17,31 +18,49 @@
 </template>
 
 <script>
+import { useStore } from 'vuex';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
 export default {
   name: 'LoginForm',
-  data() {
-    return {
-      email: '',
-      password: '',
+  setup() {
+    const store = useStore();
+    const router = useRouter();
+
+    const email = ref('');
+    const password = ref('');
+    const alertMessage = ref('');
+    const alertClass = ref('');
+
+    const handleLogin = async () => {
+      const credentials = {
+        email: email.value,
+        password: password.value,
+      };
+
+      // Call Vuex action for login
+      const success = await store.dispatch('login', credentials);
+
+      if (success) {
+        router.push('/dashboard'); // Redirect to dashboard on success
+      } else {
+        displayAlert('User not Found', 'alert alert-danger');
+      }
     };
-  },
-  methods: {
-    handleLogin() {
-      console.log('Email:', this.email);
-      console.log('Password:', this.password);
-      // Backend integration logic goes here
-    },
+
+    const displayAlert = (message, className) => {
+      alertMessage.value = message;
+      alertClass.value = className;
+    };
+
+    return {
+      email,
+      password,
+      alertMessage,
+      alertClass,
+      handleLogin,
+    };
   },
 };
 </script>
-
-<style scoped>
-.card {
-  border-radius: 10px;
-}
-
-h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-</style>
