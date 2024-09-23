@@ -1,7 +1,6 @@
 <template>
   <div class="card shadow-sm p-4" style="max-width: 400px; width: 100%;">
     <h2 class="text-center mb-4">Login</h2>
-    <div v-if="alertMessage" :class="alertClass" role="alert">{{ alertMessage }}</div>
     <form @submit.prevent="handleLogin">
       <div class="mb-3">
         <label for="email" class="form-label">Email:</label>
@@ -14,6 +13,17 @@
       </div>
       <button type="submit" class="btn btn-primary w-100">Login</button>
     </form>
+
+    <!-- Button to navigate to profile submission -->
+    <div class="text-center mt-3">
+      <button @click="navigateToProfile" class="btn btn-link">
+        New User? Submit your profile
+      </button>
+    </div>
+
+    <div v-if="alertMessage" :class="alertClass" class="mt-3">
+      {{ alertMessage }}
+    </div>
   </div>
 </template>
 
@@ -25,13 +35,13 @@ import { useRouter } from 'vue-router';
 export default {
   name: 'LoginForm',
   setup() {
-    const store = useStore();
-    const router = useRouter();
-
     const email = ref('');
     const password = ref('');
     const alertMessage = ref('');
     const alertClass = ref('');
+
+    const store = useStore();
+    const router = useRouter();
 
     const handleLogin = async () => {
       const credentials = {
@@ -39,11 +49,10 @@ export default {
         password: password.value,
       };
 
-      // Call Vuex action for login
       const success = await store.dispatch('login', credentials);
 
       if (success) {
-        router.push('/dashboard'); // Redirect to dashboard on success
+        router.push('/dashboard'); // Navigate to the dashboard on success
       } else {
         displayAlert('User not Found', 'alert alert-danger');
       }
@@ -54,12 +63,17 @@ export default {
       alertClass.value = className;
     };
 
+    const navigateToProfile = () => {
+      router.push('/submitprofile');
+    };
+
     return {
       email,
       password,
       alertMessage,
       alertClass,
       handleLogin,
+      navigateToProfile,
     };
   },
 };

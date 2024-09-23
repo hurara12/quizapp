@@ -1,0 +1,222 @@
+{
+    "users": [
+        {
+            "id": "1",
+            "email": "admin@example.com",
+            "password": "admin123",
+            "role": "Admin"
+        },
+        {
+            "id": "1727025679954",
+            "email": "zawar@gmail.com",
+            "password": "343434",
+            "role": "Student"
+        },
+        {
+            "id": "1727027579746",
+            "email": "hassan@gmail.com",
+            "password": "12121212",
+            "role": "Student"
+        },
+        {
+            "id": "1727070424716",
+            "email": "arham@gmail.com",
+            "password": "default-password",
+            "role": "Student"
+        },
+        {
+            "id": "1727070499298",
+            "email": "haroon@gmail.com",
+            "password": "default-password",
+            "role": "Student"
+        },
+        {
+            "id": "1727071112062",
+            "email": "Ali@gmail.com",
+            "password": "default-password",
+            "role": "Student"
+        }
+    ],
+    "managers": [
+        {
+            "id": "81f4",
+            "email": "alihussainch633@gmail.com",
+            "role": "manager",
+            "password": "ly5gCcbT"
+        },
+        {
+            "id": "617a",
+            "email": "salman.hanif524@gmail.com",
+            "role": "manager",
+            "password": "yvziAVtW"
+        },
+        {
+            "id": "5b94",
+            "email": "f200409@cfd.nu.edu.pk",
+            "role": "manager",
+            "password": "2SJcTKaH"
+        },
+        {
+            "id": "b7f1",
+            "email": "sharifahmed2070@gmail.com",
+            "role": "manager",
+            "password": "xP5hQDyN"
+        }
+    ],
+    "studentRequests": [
+        {
+            "id": "563e",
+            "name": "Aqib",
+            "email": "ray@gmail.com",
+            "password": "09909009",
+            "status": "rejected",
+            "role": "Student"
+        },
+        {
+            "id": "0e44",
+            "name": "Zawar",
+            "email": "zawar@gmail.com",
+            "password": "343434",
+            "status": "accepted",
+            "role": "Student"
+        },
+        {
+            "id": "29b6",
+            "name": "Hassan",
+            "email": "hassan@gmail.com",
+            "password": "12121212",
+            "status": "accepted",
+            "role": "Student"
+        },
+        {
+            "id": "ec2c",
+            "name": "Arham",
+            "email": "arham@gmail.com",
+            "password": "12121211",
+            "status": "accepted",
+            "role": "Student"
+        },
+        {
+            "id": "4784",
+            "name": "Haroon",
+            "email": "haroon@gmail.com",
+            "password": "12345678",
+            "status": "accepted",
+            "role": "Student"
+        },
+        {
+            "id": "e229",
+            "name": "Farhan",
+            "email": "farhan@gmail.com",
+            "password": "11111111",
+            "status": "accepted",
+            "role": "Student"
+        },
+        {
+            "id": "7eb8",
+            "name": "Ali",
+            "email": "Ali@gmail.com",
+            "password": "12345678",
+            "status": "accepted",
+            "role": "Student"
+        }
+    ],
+    "quizzes": [
+        {
+            "id": "1",
+            "title": "JavaScript Basics",
+            "questions": [
+                {
+                    "id": 1,
+                    "question": "Inside which HTML element do we put the JavaScript?",
+                    "options": [
+                        "<script>",
+                        "<javascript>",
+                        "<scripting>",
+                        "<js>"
+                    ],
+                    "correctAnswer": "<script>"
+                },
+                {
+                    "id": 2,
+                    "question": "What is the correct JavaScript syntax to write 'Hello World'?",
+                    "options": [
+                        "response.write('Hello World')",
+                        "document.write('Hello World')",
+                        "'Hello World'",
+                        "('Hello World')"
+                    ],
+                    "correctAnswer": "document.write('Hello World')"
+                }
+            ]
+        },
+        {
+            "id": "2",
+            "title": "Advanced JavaScript",
+            "questions": [
+                {
+                    "id": 1,
+                    "question": "Which of the following is a JavaScript framework?",
+                    "options": [
+                        "React",
+                        "Django",
+                        "Flask",
+                        "Laravel"
+                    ],
+                    "correctAnswer": "React"
+                }
+            ]
+        }
+    ],
+    "quizAssignments": [
+        {
+            "id": "663a",
+            "quizId": 2,
+            "quizTitle": "Advanced JavaScript",
+            "assignments": [
+                {
+                    "studentEmail": "zawar@gmail.com",
+                    "studentName": "Zawar",
+                    "assignedAt": "2024-09-22T21:25:50.075Z"
+                },
+                {
+                    "studentEmail": "hassan@gmail.com",
+                    "studentName": "Hassan",
+                    "assignedAt": "2024-09-23T05:49:05.667Z"
+                },
+                {
+                    "studentEmail": "arham@gmail.com",
+                    "studentName": "Arham",
+                    "assignedAt": "2024-09-23T05:56:07.963Z"
+                },
+                {
+                    "studentEmail": "Ali@gmail.com",
+                    "studentName": "Ali",
+                    "assignedAt": "2024-09-23T05:59:04.069Z"
+                },
+                {
+                    "studentEmail": "farhan@gmail.com",
+                    "studentName": "Farhan",
+                    "assignedAt": "2024-09-23T07:18:46.683Z"
+                }
+            ]
+        },
+        {
+            "id": "fdd4",
+            "quizId": 1,
+            "quizTitle": "JavaScript Basics",
+            "assignments": [
+                {
+                    "studentEmail": "hassan@gmail.com",
+                    "studentName": "Hassan",
+                    "assignedAt": "2024-09-22T21:26:08.730Z"
+                },
+                {
+                    "studentEmail": "arham@gmail.com",
+                    "studentName": "Arham",
+                    "assignedAt": "2024-09-23T08:20:42.534Z"
+                }
+            ]
+        }
+    ]
+}
