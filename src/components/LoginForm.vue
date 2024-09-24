@@ -1,28 +1,45 @@
 <template>
-  <div class="card shadow-sm p-4" style="max-width: 400px; width: 100%;">
-    <h2 class="text-center mb-4">Login</h2>
-    <form @submit.prevent="handleLogin">
-      <div class="mb-3">
-        <label for="email" class="form-label">Email:</label>
-        <input v-model="email" type="email" class="form-control" id="email" placeholder="Enter your email" required />
-      </div>
-      <div class="mb-3">
-        <label for="password" class="form-label">Password:</label>
-        <input v-model="password" type="password" class="form-control" id="password" placeholder="Enter your password"
-          required />
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Login</button>
-    </form>
+  <div class="main-wrap">
+    <div id="logindiv" class="container-fluid d-flex mt-5 justify-content-center">
+      <div class="form-container mt-5 justify-content-center p-5 shadow">
+        <h2 class="text-center mb-4">Login</h2>
+        <form @submit.prevent="handleLogin" class="login-form form-container needs-validation">
+          <div v-if="alertMessage" :class="alertClass" role="alert">{{ alertMessage }}</div>
 
-    <!-- Button to navigate to profile submission -->
-    <div class="text-center mt-3">
-      <button @click="navigateToProfile" class="btn btn-link">
-        New User? Submit your profile
-      </button>
-    </div>
+          <div class="input-box email input-group my-3 me-5">
+            <span class="input-group-text">
+              <font-awesome-icon icon="envelope" style="color: #63E6BE;"></font-awesome-icon>
+            </span>
+            <div class="form-floating">
+              <input type="email" v-model="email" class="input-field form-control" placeholder="Enter Email" required
+                id="email" />
+              <label for="email">Email</label>
+            </div>
+          </div>
 
-    <div v-if="alertMessage" :class="alertClass" class="mt-3">
-      {{ alertMessage }}
+          <div class="input-box password input-group my-3 me-5">
+            <span class="input-group-text">
+              <font-awesome-icon icon="lock" style="color: #63E6BE;"></font-awesome-icon>
+            </span>
+            <div class="form-floating">
+              <input type="password" v-model="password" class="input-field form-control" placeholder="Enter Password"
+                required id="password" />
+              <label for="password">Password</label>
+            </div>
+          </div>
+
+          <div class="submitbtn my-3">
+            <button type="submit" class="submit btn btn-success w-100 py-2">Sign In</button>
+          </div>
+
+          <!-- Button to navigate to profile submission -->
+          <div class="text-center mt-3">
+            <button @click="navigateToProfile" class="btn btn-link">
+              New User? Submit your profile
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </template>
@@ -78,3 +95,11 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.main-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>
