@@ -71,7 +71,7 @@ export default createStore({
           email: credentials.email,
           password: credentials.password,
         }); // Simulated API call
-        const { access_token } = response.data.data.token.original;
+        const { access_token, token_type, expires_in } = response.data.data.token.original;
         console.log('data ', response.data);
 
         commit('SET_TOKEN', access_token);
