@@ -14,8 +14,6 @@
       </div>
     </div>
 
-
-
     <div class="row mt-4">
       <div class="col-md-4 mb-4" v-for="(button, index) in buttons" :key="index">
         <div class="card text-center h-100">
@@ -33,6 +31,7 @@
 <script>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 
 export default {
   name: "DashboardView",
@@ -50,8 +49,11 @@ export default {
     const router = useRouter();
 
     const logout = () => {
+      store.dispatch('clearToken');
       router.push('/login');
     };
+
+    const store = useStore();
 
     return {
       buttons,

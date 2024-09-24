@@ -1,6 +1,10 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
 
+function deleteFromLocalStorage(dataToRemove) {
+  localStorage.removeItem(dataToRemove);
+}
+
 export default createStore({
   state: {
     token: null,
@@ -18,7 +22,10 @@ export default createStore({
     SET_USER(state, user) {
       state.user = user;
     },
-
+    CLEAR_TOKEN(state) {
+      state.token = null;
+      deleteFromLocalStorage('token');
+    },
     // Student and Quiz Mutations
     //   SET_ACCEPTED_STUDENTS(state, students) {
     //     state.acceptedStudents = students;
@@ -59,31 +66,25 @@ export default createStore({
     // Auth Actions
     async login({ commit }, credentials) {
       try {
-        console.log("Cred ", credentials)
-        const response = await axios.post('http://192.168.15.35:8000/api/login', {
+        console.log('Cred ', credentials);
+        const response = await axios.post('http://192.168.15.44:8000/api/login', {
           email: credentials.email,
-          password: credentials.password
-        });  // Simulated API call
-        console.log("data ", response.data);
-        return true;
-        // const users = response.data;
-        // const user = users.find(user =>
-        //   user.email === credentials.email && user.password === credentials.password
-        // );
+          password: credentials.password,
+        }); // Simulated API call
+        const { access_token } = response.data.data.token.original;
+        console.log('data ', response.data);
 
-        // if (user) {
-        //   const token = 'dummy_token_' + user.id;
-        //   commit('SET_TOKEN', token);
-        //   commit('SET_USER', user);
-        //   localStorage.setItem('token', token);
-        //   return true;
-        // } else {
-        //   return false;
-        // }
+        commit('SET_TOKEN', access_token);
+        localStorage.setItem('token', access_token);
+        return true;
       } catch (error) {
         console.error('Error', error.response ? error.response.data : error);
         return false;
       }
+    },
+    clearToken({ commit }) {
+      commit('CLEAR_TOKEN');
+      return true;
     },
 
     // Fetch Students Based on Status (Pending/Accepted)
