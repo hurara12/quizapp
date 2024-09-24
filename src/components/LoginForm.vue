@@ -69,7 +69,10 @@ export default {
       const success = await store.dispatch('login', credentials);
 
       if (success) {
-        router.push('/dashboard'); // Navigate to the dashboard on success
+        displayAlert('Successfully Logged in', 'alert alert-success');
+        setTimeout(() => {
+          router.push('/dashboard'); // Navigate to the dashboard after 1.5 seconds
+        }, 1500);
       } else {
         displayAlert('User not Found', 'alert alert-danger');
       }

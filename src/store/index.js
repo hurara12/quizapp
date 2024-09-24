@@ -59,23 +59,29 @@ export default createStore({
     // Auth Actions
     async login({ commit }, credentials) {
       try {
-        const response = await axios.get('http://localhost:3000/users');  // Simulated API call
-        const users = response.data.users;
-        const user = users.find(user =>
-          user.email === credentials.email && user.password === credentials.password
-        );
+        console.log("Cred ", credentials)
+        const response = await axios.post('http://192.168.15.35:8000/api/login', {
+          email: credentials.email,
+          password: credentials.password
+        });  // Simulated API call
+        console.log("data ", response.data);
+        return true;
+        // const users = response.data;
+        // const user = users.find(user =>
+        //   user.email === credentials.email && user.password === credentials.password
+        // );
 
-        if (user) {
-          const token = 'dummy_token_' + user.id;
-          commit('SET_TOKEN', token);
-          commit('SET_USER', user);
-          localStorage.setItem('token', token);
-          return true;
-        } else {
-          return false;
-        }
+        // if (user) {
+        //   const token = 'dummy_token_' + user.id;
+        //   commit('SET_TOKEN', token);
+        //   commit('SET_USER', user);
+        //   localStorage.setItem('token', token);
+        //   return true;
+        // } else {
+        //   return false;
+        // }
       } catch (error) {
-        console.error('Error loading db.json:', error);
+        console.error('Error', error.response ? error.response.data : error);
         return false;
       }
     },

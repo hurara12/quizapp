@@ -9,7 +9,7 @@
                 <input type="text" v-model="searchQuery" class="form-control mb-3"
                     placeholder="Search by Name, Phone, Email, or Quizzes" />
 
-                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
                     <table class="table table-hover">
                         <thead>
                             <tr>
@@ -23,7 +23,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(student, index) in filteredStudents" :key="index">
+                            <tr v-for="(student, index) in acceptedStudents" :key="index">
                                 <td>{{ student.firstName }}</td>
                                 <td>{{ student.lastName }}</td>
                                 <td>{{ student.email }}</td>
@@ -55,7 +55,7 @@
             <!-- Right Side: Pending Students -->
             <div class="col-md-4">
                 <h3>Pending Students</h3>
-                <div class="card-container" style="max-height: 300px; overflow-y: auto;">
+                <div class="card-container" style="max-height: 600px; overflow-y: auto;">
                     <div class="card mb-3" v-for="(student, index) in pendingStudents" :key="index">
                         <div class="card-body">
                             <h5 class="card-title">{{ student.firstName }} {{ student.lastName }}</h5>
@@ -78,29 +78,59 @@
 import { computed, ref } from 'vue';
 import { useStore } from 'vuex';
 
-const store = useStore();
+// Data for accepted students
+const acceptedStudents = ref([
+    {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        phone: '123-456-7890',
+        cv: '/path/to/cv/john_doe.pdf',
+        assignedQuizzes: ['Quiz 1'],
+    },
+    {
+        firstName: 'Jane',
+        lastName: 'Smith',
+        email: 'jane.smith@example.com',
+        phone: '987-654-3210',
+        cv: '/path/to/cv/jane_smith.pdf',
+        assignedQuizzes: ['Quiz 2'],
+    },
+    // Add more students as needed
+]);
 
-// Local state variables
-const searchQuery = ref('');
-const selectedStudents = ref([]);
-const selectedQuiz = ref('');
-const showAssignDiv = ref(false);
+// Data for pending students
+const pendingStudents = ref([
+    {
+        firstName: 'Mark',
+        lastName: 'Taylor',
+        email: 'mark.taylor@example.com',
+        phone: '555-123-4567',
+        cv: '/path/to/cv/mark_taylor.pdf',
+    },
+    {
+        firstName: 'Alice',
+        lastName: 'Johnson',
+        email: 'alice.johnson@example.com',
+        phone: '444-987-6543',
+        cv: '/path/to/cv/alice_johnson.pdf',
+    },
+    // Add more pending students as needed
+]);
 
-// Fetch accepted students and pending students from Vuex store
-const acceptedStudents = computed(() => store.state.acceptedStudents);
-console.log(acceptedStudents);
-const pendingStudents = computed(() => store.state.pendingStudents);
-const availableQuizzes = computed(() => store.state.availableQuizzes);
+// Data for available quizzes
+const availableQuizzes = ref([
+    { id: 1, title: 'Quiz 1' },
+    { id: 2, title: 'Quiz 2' },
+    { id: 3, title: 'Quiz 3' },
+]);
 
-// Filter students based on search query
-const filteredStudents = computed(() => {
-    return acceptedStudents.value.filter((student) => {
-        const searchString = `${student.firstName} ${student.lastName} ${student.email} ${student.phone} ${student.assignedQuizzes.join(', ')}`.toLowerCase();
-        return searchString.includes(searchQuery.value.toLowerCase());
-    });
-});
+// State management
+const showAssignDiv = ref(false); // To show/hide the assign quiz div
+const selectedStudents = ref([]); // List of selected students
+const selectedQuiz = ref('');     // Selected quiz to be assigned
 
-// Toggle quiz assignment
+// Handle checkbox toggle for quiz assignment
 const toggleQuizAssignment = (student) => {
     if (selectedStudents.value.includes(student)) {
         selectedStudents.value = selectedStudents.value.filter((s) => s !== student);
@@ -110,38 +140,132 @@ const toggleQuizAssignment = (student) => {
     showAssignDiv.value = selectedStudents.value.length > 0;
 };
 
-// Check if a quiz is already assigned
-const isQuizAlreadyAssigned = (student) => {
-    return student.assignedQuizzes.includes(selectedQuiz.value);
-};
-
-// Assign the selected quiz to selected students
-const assignQuizToStudents = async () => {
-    try {
-        await store.dispatch('assignQuiz', {
-            students: selectedStudents.value,
-            quiz: selectedQuiz.value,
-        });
-        // Clear selected students and hide the assignment div
-        selectedStudents.value = [];
-        showAssignDiv.value = false;
-        // Uncheck all checkboxes
-        document.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => (checkbox.checked = false));
-    } catch (error) {
-        console.error('Failed to assign quiz:', error);
-    }
+// Assign the selected quiz to the selected students
+const assignQuizToStudents = () => {
+    selectedStudents.value.forEach((student) => {
+        student.assignedQuizzes.push(selectedQuiz.value);
+    });
+    selectedStudents.value = [];
+    showAssignDiv.value = false;
 };
 
 // Accept student and move from pending to accepted
 const acceptStudent = (index) => {
     const acceptedStudent = pendingStudents.value.splice(index, 1)[0];
-    store.commit('acceptStudent', acceptedStudent);
+    acceptedStudents.value.push({ ...acceptedStudent, assignedQuizzes: [] });
 };
 
 // Reject student and remove from pending list
 const rejectStudent = (index) => {
     pendingStudents.value.splice(index, 1);
 };
+
+// const store = useStore();
+
+// // Local state variables
+// const searchQuery = ref('');
+// const selectedStudents = ref([]);
+// const selectedQuiz = ref('');
+// const showAssignDiv = ref(false);
+
+// // Fetch accepted students and pending students from Vuex store
+// // const acceptedStudents = computed(() => store.state.acceptedStudents);
+// // console.log(acceptedStudents);
+// // const pendingStudents = computed(() => store.state.pendingStudents);
+// // const availableQuizzes = computed(() => store.state.availableQuizzes);
+
+// // Filter students based on search query
+// const filteredStudents = computed(() => {
+//     // return acceptedStudents.value.filter((student) => {
+//     //     const searchString = `${student.firstName} ${student.lastName} ${student.email} ${student.phone} ${student.assignedQuizzes.join(', ')}`.toLowerCase();
+//     //     return searchString.includes(searchQuery.value.toLowerCase());
+//     // });
+// });
+
+// // Toggle quiz assignment
+// const toggleQuizAssignment = (student) => {
+//     if (selectedStudents.value.includes(student)) {
+//         selectedStudents.value = selectedStudents.value.filter((s) => s !== student);
+//     } else {
+//         selectedStudents.value.push(student);
+//     }
+//     showAssignDiv.value = selectedStudents.value.length > 0;
+// };
+
+// // Check if a quiz is already assigned
+const isQuizAlreadyAssigned = (student) => {
+    return student.assignedQuizzes.includes(selectedQuiz.value);
+};
+
+// // Assign the selected quiz to selected students
+// const assignQuizToStudents = async () => {
+//     try {
+//         await store.dispatch('assignQuiz', {
+//             students: selectedStudents.value,
+//             quiz: selectedQuiz.value,
+//         });
+//         // Clear selected students and hide the assignment div
+//         selectedStudents.value = [];
+//         showAssignDiv.value = false;
+//         // Uncheck all checkboxes
+//         document.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => (checkbox.checked = false));
+//     } catch (error) {
+//         console.error('Failed to assign quiz:', error);
+//     }
+// };
+// const availableQuizzes = ref([
+//     { id: 1, title: 'Quiz 1' },
+//     { id: 2, title: 'Quiz 2' },
+//     { id: 3, title: 'Quiz 3' },
+// ]);
+// const pendingStudents = ref([
+//     {
+//         firstName: 'Mark',
+//         lastName: 'Taylor',
+//         email: 'mark.taylor@example.com',
+//         phone: '555-123-4567',
+//         cv: '/path/to/cv/mark_taylor.pdf',
+//     },
+//     {
+//         firstName: 'Alice',
+//         lastName: 'Johnson',
+//         email: 'alice.johnson@example.com',
+//         phone: '444-987-6543',
+//         cv: '/path/to/cv/alice_johnson.pdf',
+//     },
+//     // Add more pending students as needed
+// ]);
+// const acceptedStudents = ref([
+//     {
+//         firstName: 'John',
+//         lastName: 'Doe',
+//         email: 'john.doe@example.com',
+//         phone: '123-456-7890',
+//         cv: '/path/to/cv/john_doe.pdf',
+//         assignedQuizzes: ['Quiz 1'],
+//     },
+//     {
+//         firstName: 'Jane',
+//         lastName: 'Smith',
+//         email: 'jane.smith@example.com',
+//         phone: '987-654-3210',
+//         cv: '/path/to/cv/jane_smith.pdf',
+//         assignedQuizzes: ['Quiz 2'],
+//     },
+//     // Add more students as needed
+// ]);
+// // Accept student and move from pending to accepted
+// const acceptStudent = (index) => {
+//     const acceptedStudent = pendingStudents.value.splice(index, 1)[0];
+//     store.commit('acceptStudent', acceptedStudent);
+
+// };
+
+
+// // Reject student and remove from pending list
+// const rejectStudent = (index) => {
+//     pendingStudents.value.splice(index, 1);
+// };
 </script>
 <style scoped>
 h3 {
