@@ -18,22 +18,36 @@ export default createStore({
     // Action for logging in
     async login({ commit }, credentials) {
       try {
-        // Replace with your actual API endpoint
-        const response = await axios.post('db.json', credentials);
-        const { token, user } = response.data;
+        // Load the JSON data containing user credentials (for example purposes)
+        const response = await axios.get('/db.json'); // Assuming the db.json file is hosted
+        const users = response.data.users; // Assume db.json has a "users" array
+        console.log("USer ", users)
+        // Find the user with the matching username and password
+        const user = users.find(user =>
+          user.username === credentials.username && user.password === credentials.password
+        );
 
-        // Commit mutations to update state
-        commit('SET_TOKEN', token);
-        commit('SET_USER', user);
+        if (user) {
+          // Simulate a token generation (you can adjust this as needed)
+          const token = 'dummy_token_' + user.id;
 
-        // Store the token in localStorage or Cookies
-        localStorage.setItem('token', token);
-        return true;  // Return true on success
+          // Commit mutations to update state
+          commit('SET_TOKEN', token);
+          commit('SET_USER', user);
+
+          // Store the token in localStorage
+          localStorage.setItem('token', token);
+
+          return true;  // Return true on success
+        } else {
+          return false;  // Return false if credentials are incorrect
+        }
       } catch (error) {
-        console.error('Error logging in:', error);
+        console.error('Error loading db.json:', error);
         return false;  // Return false on failure
       }
-    },
+    }
+    ,
 
     // Action for submitting profile data
     async submitProfile({ commit }, formData) {
