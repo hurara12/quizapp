@@ -123,7 +123,7 @@ export default {
             formData.append('email', email.value);
             //formData.append('password', password.value);
             // formData.append('phone', phone.value);
-            formData.append('cv', cv.value);
+            //formData.append('cv', cv.value);
 
             try {
                 const success = await store.dispatch('submitProfile', formData);

@@ -75,12 +75,12 @@ export default createStore({
     async login({ commit }, credentials) {
       try {
         console.log('Cred ', credentials);
-        const response = await axios.post('http://127.0.0.1:8080/api/login', {
+        const response = await axios.post('http://192.168.15.76:8000/api/login', {
           email: credentials.email,
           password: credentials.password,
         }); // Simulated API call
-        const { access_token, token_type, expires_in } = response.data.data.token.original;
-        console.log('data ', response.data);
+        const { access_token, token_type, expires_in } = response.data.token;
+        console.log('data ', response.data.token);
 
         commit('SET_TOKEN', access_token);
         localStorage.setItem('token', access_token);
