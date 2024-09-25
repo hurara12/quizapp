@@ -9,6 +9,8 @@ export default createStore({
   state: {
     token: null,
     user: null,
+    quizzes: [], // Stores all quiz categories
+    selectedQuiz: null, // Stores the currently selected quiz
     // acceptedStudents: [],
     // pendingStudents: [],
     // availableQuizzes: [],
@@ -25,6 +27,12 @@ export default createStore({
     CLEAR_TOKEN(state) {
       state.token = null;
       deleteFromLocalStorage('token');
+    },
+    setQuizzes(state, quizzes) {
+      state.quizzes = quizzes;
+    },
+    selectQuiz(state, quiz) {
+      state.selectedQuiz = quiz;
     },
     // Student and Quiz Mutations
     //   SET_ACCEPTED_STUDENTS(state, students) {
@@ -67,7 +75,7 @@ export default createStore({
     async login({ commit }, credentials) {
       try {
         console.log('Cred ', credentials);
-        const response = await axios.post('http://192.168.15.44:8000/api/login', {
+        const response = await axios.post('http://127.0.0.1:8080/api/login', {
           email: credentials.email,
           password: credentials.password,
         }); // Simulated API call
@@ -81,6 +89,35 @@ export default createStore({
         console.error('Error', error.response ? error.response.data : error);
         return false;
       }
+
+    },
+    async submitProfile(formData) {
+      try {
+        console.log('Cred ', formData);
+        const response = await axios.post('http://192.168.15.44:8000/api/submit', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        console.log('data ', response);
+        return true;
+      } catch (error) {
+        console.error('Error', error.response ? error.response.data : error);
+        return false;
+      }
+    },
+    async fetchQuizzes({ commit }) {
+      try {
+        // Fetch quizzes from your db.json (update URL with the correct path to your db.json file)
+        const response = await axios.get('http://localhost:3000/quizzes');
+        commit('setQuizzes', response.data);
+      } catch (error) {
+        console.error('Error fetching quizzes:', error);
+      }
+    },
+    selectQuiz({ commit, state }, quizId) {
+      const selectedQuiz = state.quizzes.find((quiz) => quiz.id === quizId);
+      commit('selectQuiz', selectedQuiz);
     },
     clearToken({ commit }) {
       commit('CLEAR_TOKEN');

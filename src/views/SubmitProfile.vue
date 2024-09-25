@@ -117,11 +117,12 @@ export default {
 
         const handleSubmitProfile = async () => {
             const formData = new FormData();
-            formData.append('firstname', firstname.value);
-            formData.append('lastname', lastname.value);
+            //formData.append('firstname', firstname.value);
+            //formData.append('lastname', lastname.value);
+            formData.append('name', firstname.value + " " + lastname.value);
             formData.append('email', email.value);
-            formData.append('password', password.value);
-            formData.append('phone', phone.value);
+            //formData.append('password', password.value);
+            // formData.append('phone', phone.value);
             formData.append('cv', cv.value);
 
             try {
@@ -129,7 +130,9 @@ export default {
 
                 if (success) {
                     displayAlert('Profile submitted successfully!', 'alert alert-success');
-                    router.push('/login');
+                    setTimeout(() => {
+                        router.push('/login');
+                    }, 1500);
                 }
             } catch (error) {
                 console.error('Error submitting profile:', error);
