@@ -27,6 +27,7 @@ export default createStore({
     CLEAR_TOKEN(state) {
       state.token = null;
       deleteFromLocalStorage('token');
+      deleteFromLocalStorage('role');
     },
     setQuizzes(state, quizzes) {
       state.quizzes = quizzes;
@@ -80,16 +81,15 @@ export default createStore({
           password: credentials.password,
         }); // Simulated API call
         const { access_token, token_type, expires_in } = response.data.token;
-        console.log('data ', response.data.token);
-
+        console.log('data ', response.data.data.role);
         commit('SET_TOKEN', access_token);
         localStorage.setItem('token', access_token);
+        localStorage.setItem('role', response.data.data.role);
         return true;
       } catch (error) {
         console.error('Error', error.response ? error.response.data : error);
         return false;
       }
-
     },
     async submitProfile(formData) {
       try {
