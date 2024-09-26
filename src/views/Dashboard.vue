@@ -39,7 +39,7 @@ export default {
     const buttons = ref([
       { title: "Manager Roles", description: "View and Edit Manager requests.", link: "/managerroles" },
       { title: "Manage Students", description: "Manage Student and assign Quiz", link: "/managestudents" },
-      { title: "View Results", description: "Check quiz results.", link: "/view-results" },
+      { title: "View Results", description: "Check quiz results.", link: "/viewresult" },
       { title: "Student Requests", description: "Approve or reject student requests.", link: "/student-requests" },
       { title: "Profile Management", description: "Manage your profile.", link: "/profile" },
       { title: "Settings", description: "Adjust your settings.", link: "/settings" },

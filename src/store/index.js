@@ -1,6 +1,14 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
 
+function loadFromLocalStorage(dataToGet) {
+  const data = JSON.parse(localStorage.getItem(dataToGet)) || [];
+  return data;
+}
+
+function saveToLocalStorage(keyToSave, dataToSave) {
+  localStorage.setItem(keyToSave, JSON.stringify(dataToSave));
+}
 function deleteFromLocalStorage(dataToRemove) {
   localStorage.removeItem(dataToRemove);
 }
@@ -11,10 +19,6 @@ export default createStore({
     user: null,
     quizzes: [], // Stores all quiz categories
     selectedQuiz: null, // Stores the currently selected quiz
-    // acceptedStudents: [],
-    // pendingStudents: [],
-    // availableQuizzes: [],
-    // quizAssignments: [],
   },
   mutations: {
     // Auth Mutations
@@ -76,15 +80,15 @@ export default createStore({
     async login({ commit }, credentials) {
       try {
         console.log('Cred ', credentials);
-        const response = await axios.post('http://192.168.15.76:8000/api/login', {
+        const response = await axios.post('http://192.168.15.243:8000/api/login', {
           email: credentials.email,
           password: credentials.password,
         }); // Simulated API call
-        const { access_token, token_type, expires_in } = response.data.token;
-        console.log('data ', response.data.data.role);
-        commit('SET_TOKEN', access_token);
-        localStorage.setItem('token', access_token);
-        localStorage.setItem('role', response.data.data.role);
+        // const { access_token, token_type, expires_in } = response.data.token;
+        console.log('data ', response.data);
+        // commit('SET_TOKEN', access_token);
+        //localStorage.setItem('token', access_token);
+        //localStorage.setItem('role', response.data.data.role);
         return true;
       } catch (error) {
         console.error('Error', error.response ? error.response.data : error);

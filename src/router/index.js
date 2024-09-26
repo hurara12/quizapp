@@ -5,6 +5,8 @@ import Dashboard from '@/views/Dashboard.vue';
 import QuizComponent from '@/components/QuizComponent.vue';
 import ManagerRoles from '@/components/ManagerRoles.vue';
 import ManageStudents from '@/components/ManageStudents.vue';
+import ViewResult from '@/components/ViewResult.vue';
+import ViewSoloResult from '@/components/ViewSoloResult.vue';
 
 const routes = [
   {
@@ -40,6 +42,16 @@ const routes = [
     path: '/managestudents',  // Define the route for profile submission
     name: 'ManageStudents',
     component: ManageStudents,
+  },
+  {
+    path: '/viewresult',  // Define the route for profile submission
+    name: 'ViewResult',
+    component: ViewResult,
+  },
+  {
+    path: '/viewsoloresult',  // Define the route for profile submission
+    name: 'ViewSoloResult',
+    component: ViewSoloResult,
   }
 ];
 
