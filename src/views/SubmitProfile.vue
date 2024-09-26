@@ -81,7 +81,13 @@
 
                     <!-- Submit Button -->
                     <div class="submitbtn my-3">
-                        <button type="submit" class="submit btn btn-success w-100 py-2">Submit Profile</button>
+                        <button type="submit" :disabled="loadingComp" class="submit btn btn-success w-100 py-2">Submit
+                            Profile
+                            <!-- <i class="fa fa-circle-o-notch fa-spin"></i> -->
+                            <font-awesome-icon v-if="loadingComp" :icon="['fas', 'circle-notch']" class="fa-lg fa-spin"
+                                style="color: white;">
+                            </font-awesome-icon>
+                        </button>
                     </div>
                 </form>
 
@@ -111,6 +117,7 @@ export default {
         const cv = ref(null);
         const alertMessage = ref('');
         const alertClass = ref('');
+        let loadingComp = ref(false);
 
         const router = useRouter();
         const store = useStore();
@@ -122,6 +129,7 @@ export default {
                 cv: cv.value,
             };
             console.log(credentials)
+            loadingComp.value = true;
             //console.log(formData.name.values)
 
             try {
@@ -129,14 +137,17 @@ export default {
 
                 if (success) {
                     displayAlert('Profile submitted successfully!', 'alert alert-success');
+                    loadingComp.value = false;
                     setTimeout(() => {
                         router.push('/login');
                     }, 1500);
                 }
                 else {
                     displayAlert('Failed to submit profile. Please try again.', 'alert alert-danger');
+                    loadingComp.value = false;
                 }
             } catch (error) {
+                loadingComp.value = false;
                 console.error('Error submitting profile:', error);
                 displayAlert('Failed to submit profile. Please try again.', 'alert alert-danger');
             }
@@ -168,6 +179,7 @@ export default {
             handleSubmitProfile,
             handleFileUpload,
             navigateToLogin,
+            loadingComp,
         };
     },
 };

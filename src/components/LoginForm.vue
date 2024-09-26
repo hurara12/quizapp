@@ -29,7 +29,11 @@
           </div>
 
           <div class="submitbtn my-3">
-            <button type="submit" class="submit btn btn-success w-100 py-2">Sign In</button>
+            <button type="submit" :disabled="loadingComp" class="submit btn btn-success w-100 py-2">Sign In
+              <font-awesome-icon v-if="loadingComp" :icon="['fas', 'circle-notch']" class="fa-lg fa-spin"
+                style="color: white;">
+              </font-awesome-icon>
+            </button>
           </div>
 
           <!-- Button to navigate to profile submission -->
@@ -59,22 +63,24 @@ export default {
 
     const store = useStore();
     const router = useRouter();
-
+    let loadingComp = ref(false);
     const handleLogin = async () => {
       const credentials = {
         email: email.value,
         password: password.value,
       };
-
+      loadingComp.value = true;
       const success = await store.dispatch('login', credentials);
 
       if (success) {
         displayAlert('Successfully Logged in', 'alert alert-success');
+        loadingComp.value = false;
         setTimeout(() => {
           router.push('/dashboard'); // Navigate to the dashboard after 1.5 seconds
         }, 1500);
       } else {
         displayAlert('User not Found', 'alert alert-danger');
+        loadingComp.value = false;
       }
     };
 
@@ -94,6 +100,7 @@ export default {
       alertClass,
       handleLogin,
       navigateToProfile,
+      loadingComp,
     };
   },
 };

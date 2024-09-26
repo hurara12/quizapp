@@ -6,10 +6,10 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/js/bootstrap.js';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { fas } from '@fortawesome/free-solid-svg-icons';
+import { fas, faCircleNotch } from '@fortawesome/free-solid-svg-icons';
 
 
-library.add(fas);
+library.add(fas, faCircleNotch);
 
 const app = createApp(App);
 
