@@ -116,23 +116,25 @@ export default {
         const store = useStore();
 
         const handleSubmitProfile = async () => {
-            const formData = new FormData();
-            //formData.append('firstname', firstname.value);
-            //formData.append('lastname', lastname.value);
-            formData.append('name', firstname.value + " " + lastname.value);
-            formData.append('email', email.value);
-            //formData.append('password', password.value);
-            // formData.append('phone', phone.value);
-            //formData.append('cv', cv.value);
+            const credentials = {
+                name: `${firstname.value} ${lastname.value}`,  // Ensure correct concatenation
+                email: email.value,
+                cv: cv.value,
+            };
+            console.log(credentials)
+            //console.log(formData.name.values)
 
             try {
-                const success = await store.dispatch('submitProfile', formData);
+                const success = await store.dispatch('submitProfile', credentials);
 
                 if (success) {
                     displayAlert('Profile submitted successfully!', 'alert alert-success');
                     setTimeout(() => {
                         router.push('/login');
                     }, 1500);
+                }
+                else {
+                    displayAlert('Failed to submit profile. Please try again.', 'alert alert-danger');
                 }
             } catch (error) {
                 console.error('Error submitting profile:', error);

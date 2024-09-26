@@ -1,5 +1,5 @@
 <template>
-    <div class="container mt-5">
+    <div class="container mt-4">
         <!-- Search and View Mode -->
         <div class="d-flex justify-content-between mb-3">
             <input type="text" class="form-control w-50" placeholder="Search..." v-model="searchQuery" />
@@ -16,7 +16,7 @@
         <div class="row">
             <transition-group name="fade-slide" tag="div" class="d-flex flex-wrap">
                 <div v-for="(item, index) in paginatedData" :key="index" class="col-12 col-md-6 col-lg-4 p-4">
-                    <div class="card custom-card user-card p-3" :style="{ height: '400px' }">
+                    <div class="card custom-card user-card p-3" :style="{ height: '500px' }">
                         <div class="card-body text-center">
                             <template v-if="viewMode === 'student'">
                                 <h6 class="card-subtitle mb-2 text-muted">User Information</h6>
@@ -176,6 +176,9 @@ export default {
         ]);
 
         const filteredData = computed(() => {
+            if (searchQuery.value) {
+                currentPage.value = 1;
+            }
             let data = viewMode.value === "student" ? students.value : quizzes.value;
             if (searchQuery.value) {
                 data = data.filter((item) =>

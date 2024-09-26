@@ -95,15 +95,20 @@ export default createStore({
         return false;
       }
     },
-    async submitProfile(formData) {
-      try {
-        console.log('Cred ', formData);
-        const response = await axios.post('http://192.168.15.44:8000/api/submit', formData, {
+    async submitProfile({ commit }, formData) {
+      try {// test it that axious should take direct formdata
+        console.log('Received formData:', formData);
+        const data = new FormData();
+        data.append('name', formData.name);
+        data.append('email', formData.email);
+        data.append('cv', formData.cv); // Assuming `formData.cv` is a file input
+
+        const response = await axios.post('http://192.168.15.243:8000/api/register-student', data, {
           headers: {
-            'Content-Type': 'multipart/form-data',
-          },
+            'Content-Type': 'multipart/form-data'
+          }
         });
-        console.log('data ', response);
+        console.log('data ', response.data);
         return true;
       } catch (error) {
         console.error('Error', error.response ? error.response.data : error);

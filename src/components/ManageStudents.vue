@@ -1,13 +1,20 @@
 <template>
+    <!-- // rejected ka time ni a raha. or rejected mn bi assign quiz dikha raha hy  -->
     <div class="container mt-5">
         <div class="row">
-            <!-- Left Side: Accepted Students -->
+            <!-- Left Side: Accepted and Rejected Students -->
             <div class="col-md-8">
-                <h3>Accepted Students</h3>
+                <h3>Students</h3>
 
-                <!-- Search Bar -->
-                <input type="text" v-model="searchQuery" class="form-control mb-3"
-                    placeholder="Search by Name, Phone, Email, or Quizzes" />
+                <!-- Search Bar and Dropdown Filter -->
+                <div class="d-flex mb-3">
+                    <input type="text" v-model="searchQuery" class="form-control me-2"
+                        placeholder="Search by Name, Phone, Email, or Quizzes" />
+                    <select v-model="filterStatus" class="form-select">
+                        <option value="accepted" class="text-success">Accepted</option>
+                        <option value="rejected" class="text-danger">Rejected</option>
+                    </select>
+                </div>
 
                 <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
                     <table class="table table-hover">
@@ -18,38 +25,59 @@
                                 <th>Email</th>
                                 <th>Phone No</th>
                                 <th>View CV</th>
-                                <th>Assigned Quizzes</th>
-                                <th>Assign Quiz</th>
+                                <th v-if="filterStatus === 'accepted'">Assigned</th>
+                                <th v-if="filterStatus === 'accepted'">Assign</th>
+                                <th v-if="filterStatus === 'rejected'">Status</th>
+                                <th v-if="filterStatus === 'rejected'">Rejected At</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(student, index) in acceptedStudents" :key="index">
+                            <tr v-for="(student, index) in filteredStudents" :key="index">
                                 <td>{{ student.firstName }}</td>
                                 <td>{{ student.lastName }}</td>
                                 <td>{{ student.email }}</td>
                                 <td>{{ student.phone }}</td>
                                 <td><a :href="student.cv" target="_blank" class="btn btn-info btn-sm">View CV</a></td>
-                                <td>{{ student.assignedQuizzes.join(', ') }}</td>
-                                <td>
-                                    <input type="checkbox" :disabled="isQuizAlreadyAssigned(student)"
+                                <td v-if="filterStatus === 'accepted'">{{ student.assignedQuizzes.join(', ') }}</td>
+                                <td v-if="filterStatus === 'accepted'">
+                                    <input type="checkbox"
+                                        :disabled="isQuizAlreadyAssigned(student) || student.status === 'rejected'"
                                         @change="toggleQuizAssignment(student)" />
                                 </td>
+                                <td v-if="filterStatus === 'rejected'">{{ student.status }}</td>
+                                <td v-if="filterStatus === 'rejected'">{{ student.rejectedAt }}</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
                 <!-- Assign Quiz Div -->
-                <div v-if="showAssignDiv" class="mt-4">
+                <div v-if="showAssignDiv && filterStatus === 'accepted'" class="my-4">
                     <label for="availableQuizzes" class="form-label">Available Quizzes</label>
-                    <select v-model="selectedQuiz" id="availableQuizzes" class="form-select mb-3">
+                    <select v-model="selectedQuiz" id="availableQuizzes" class="form-select mb-3" required>
+                        <option value="" disabled>Select a Quiz</option> <!-- Default option -->
                         <option v-for="quiz in availableQuizzes" :key="quiz.id" :value="quiz.title">
                             {{ quiz.title }}
                         </option>
                     </select>
+
+                    <div class="mb-3">
+                        <label for="startDateTime" class="form-label">Quiz Start Date & Time</label>
+                        <input type="datetime-local" v-model="startDateTime" id="startDateTime" class="form-control"
+                            :min="minDateTime" :max="maxStartDateTime" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="endDateTime" class="form-label">Quiz End Date & Time</label>
+                        <input type="datetime-local" v-model="endDateTime" id="endDateTime" class="form-control"
+                            :min="startDateTime || minDateTime" :max="maxEndDateTime" required />
+                    </div>
+
                     <button class="btn btn-primary" @click="assignQuizToStudents">Assign Quiz to Selected
                         Students</button>
                 </div>
+
+
             </div>
 
             <!-- Right Side: Pending Students -->
@@ -74,63 +102,67 @@
         </div>
     </div>
 </template>
+
 <script setup>
-import { computed, ref } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useStore } from 'vuex';
 
-// Data for accepted students
+// Sample Data
 const acceptedStudents = ref([
-    {
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john.doe@example.com',
-        phone: '123-456-7890',
-        cv: '/path/to/cv/john_doe.pdf',
-        assignedQuizzes: ['Quiz 1'],
-    },
-    {
-        firstName: 'Jane',
-        lastName: 'Smith',
-        email: 'jane.smith@example.com',
-        phone: '987-654-3210',
-        cv: '/path/to/cv/jane_smith.pdf',
-        assignedQuizzes: ['Quiz 2'],
-    },
-    // Add more students as needed
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@example.com', phone: '987-654-3210', cv: '/path/to/cv/jane_smith.pdf', assignedQuizzes: ['Quiz 2'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'Bob', lastName: 'Brown', email: 'bob.brown@example.com', phone: '111-222-3333', cv: '/path/to/cv/bob_brown.pdf', assignedQuizzes: [], status: 'rejected', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'Mary', lastName: 'Jones', email: 'mary.jones@example.com', phone: '444-555-6666', cv: '/path/to/cv/mary_jones.pdf', assignedQuizzes: [], status: 'rejected', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'Mary', lastName: 'Jones', email: 'mary.jones@example.com', phone: '444-555-6666', cv: '/path/to/cv/mary_jones.pdf', assignedQuizzes: [], status: 'rejected', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
+
+
 ]);
 
-// Data for pending students
 const pendingStudents = ref([
-    {
-        firstName: 'Mark',
-        lastName: 'Taylor',
-        email: 'mark.taylor@example.com',
-        phone: '555-123-4567',
-        cv: '/path/to/cv/mark_taylor.pdf',
-    },
-    {
-        firstName: 'Alice',
-        lastName: 'Johnson',
-        email: 'alice.johnson@example.com',
-        phone: '444-987-6543',
-        cv: '/path/to/cv/alice_johnson.pdf',
-    },
-    // Add more pending students as needed
+    { firstName: 'Mark', lastName: 'Taylor', email: 'mark.taylor@example.com', phone: '555-123-4567', cv: '/path/to/cv/mark_taylor.pdf' },
+    { firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '444-987-6543', cv: '/path/to/cv/alice_johnson.pdf' },
+    { firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '444-987-6543', cv: '/path/to/cv/alice_johnson.pdf' },
+    { firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '444-987-6543', cv: '/path/to/cv/alice_johnson.pdf' },
+    { firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '444-987-6543', cv: '/path/to/cv/alice_johnson.pdf' },
+    { firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '444-987-6543', cv: '/path/to/cv/alice_johnson.pdf' },
+    { firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '444-987-6543', cv: '/path/to/cv/alice_johnson.pdf' },
+    { firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '444-987-6543', cv: '/path/to/cv/alice_johnson.pdf' },
+
 ]);
 
-// Data for available quizzes
 const availableQuizzes = ref([
     { id: 1, title: 'Quiz 1' },
     { id: 2, title: 'Quiz 2' },
     { id: 3, title: 'Quiz 3' },
 ]);
 
-// State management
-const showAssignDiv = ref(false); // To show/hide the assign quiz div
-const selectedStudents = ref([]); // List of selected students
-const selectedQuiz = ref('');     // Selected quiz to be assigned
+const selectedStudents = ref([]);
+const selectedQuiz = ref('');
+const showAssignDiv = ref(false);
+const searchQuery = ref('');
+const filterStatus = ref('accepted'); // Filter for accepted/rejected students
 
-// Handle checkbox toggle for quiz assignment
+const startDateTime = ref('');
+const endDateTime = ref('');
+
+// Toggle student selection for quiz assignment
 const toggleQuizAssignment = (student) => {
     if (selectedStudents.value.includes(student)) {
         selectedStudents.value = selectedStudents.value.filter((s) => s !== student);
@@ -139,9 +171,72 @@ const toggleQuizAssignment = (student) => {
     }
     showAssignDiv.value = selectedStudents.value.length > 0;
 };
+// Minimum allowed date/time (now or later)
+const minDateTime = ref(new Date().toISOString().slice(0, 16)); // ISO 8601 format for 'yyyy-MM-ddTHH:mm'
+// Maximum start date-time (30 days from today)
+const today = new Date();
+const maxStartDate = new Date(today);
+maxStartDate.setDate(today.getDate() + 30);
+const maxStartDateTime = ref(maxStartDate.toISOString().slice(0, 16)); // Start date limit: 30 days from today
 
-// Assign the selected quiz to the selected students
+// Maximum end date-time (dynamically set based on start date)
+const maxEndDateTime = ref('');
+// Watch the startDateTime value and calculate the max allowed endDateTime (30 days from start)
+watch(startDateTime, (newStart) => {
+    if (newStart) {
+        const start = new Date(newStart);
+
+        // Maximum end date is 30 days after start date, but no more than 60 days from today
+        const maxEndFromStart = new Date(start);
+        maxEndFromStart.setDate(start.getDate() + 30);
+
+        const maxEndFromToday = new Date(today);
+        maxEndFromToday.setDate(today.getDate() + 60); // Maximum end date is 60 days from today
+
+        // Set the maxEndDateTime to the earlier of the two (30 days from start or 60 days from today)
+        const maxAllowedEnd = maxEndFromStart > maxEndFromToday ? maxEndFromToday : maxEndFromStart;
+        maxEndDateTime.value = maxAllowedEnd.toISOString().slice(0, 16); // Format as 'yyyy-MM-ddTHH:mm'
+    }
+});
+
+
+// Assign quiz to selected students
 const assignQuizToStudents = () => {
+    // Validate required fields
+    if (!selectedQuiz.value) {
+        alert('Please select a quiz.');
+        return;
+    }
+
+    if (!startDateTime.value) {
+        alert('Please select a start date and time.');
+        return;
+    }
+
+    if (!endDateTime.value) {
+        alert('Please select an end date and time.');
+        return;
+    }
+
+    // Ensure end time is after start time and within the limits
+    if (new Date(startDateTime.value) >= new Date(endDateTime.value)) {
+        alert('End time must be later than the start time.');
+        return;
+    }
+
+    // Prepare the data to send to the backend
+    const assignmentData = {
+        quizTitle: selectedQuiz.value,
+        startDateTime: startDateTime.value,
+        endDateTime: endDateTime.value,
+    };
+
+    console.log('Assignment data:', assignmentData);
+
+    // Perform backend action (with Axios, for example)
+    // axios.post('/assign-quiz', assignmentData);
+    // Perform backend action (with Axios, for example)
+    // axios.post('/assign-quiz', assignmentData);
     selectedStudents.value.forEach((student) => {
         student.assignedQuizzes.push(selectedQuiz.value);
     });
@@ -149,124 +244,41 @@ const assignQuizToStudents = () => {
     showAssignDiv.value = false;
 };
 
-// Accept student and move from pending to accepted
+// Accept student and move to accepted list
 const acceptStudent = (index) => {
     const acceptedStudent = pendingStudents.value.splice(index, 1)[0];
-    acceptedStudents.value.push({ ...acceptedStudent, assignedQuizzes: [] });
+    acceptedStudents.value.push({ ...acceptedStudent, assignedQuizzes: [], status: 'accepted' });
 };
 
-// Reject student and remove from pending list
+// Reject student and move to rejected list
+// Reject student and move to rejected list
 const rejectStudent = (index) => {
-    pendingStudents.value.splice(index, 1);
+    const rejectedStudent = pendingStudents.value.splice(index, 1)[0];
+    rejectedStudents.value.push({ ...rejectedStudent, assignedQuizzes: [], status: 'rejected', rejectedAt: new Date().toLocaleDateString() });
 };
 
-// const store = useStore();
 
-// // Local state variables
-// const searchQuery = ref('');
-// const selectedStudents = ref([]);
-// const selectedQuiz = ref('');
-// const showAssignDiv = ref(false);
+// Filter students based on search query and status
+const filteredStudents = computed(() => {
+    return acceptedStudents.value.filter(student => {
+        const matchesQuery = student.firstName.toLowerCase().includes(searchQuery.value.toLowerCase())
+            || student.lastName.toLowerCase().includes(searchQuery.value.toLowerCase())
+            || student.email.toLowerCase().includes(searchQuery.value.toLowerCase())
+            || student.phone.toLowerCase().includes(searchQuery.value.toLowerCase())
+            || student.assignedQuizzes.join(', ').toLowerCase().includes(searchQuery.value.toLowerCase());
 
-// // Fetch accepted students and pending students from Vuex store
-// // const acceptedStudents = computed(() => store.state.acceptedStudents);
-// // console.log(acceptedStudents);
-// // const pendingStudents = computed(() => store.state.pendingStudents);
-// // const availableQuizzes = computed(() => store.state.availableQuizzes);
+        return matchesQuery && student.status === filterStatus.value;
+    });
+});
 
-// // Filter students based on search query
-// const filteredStudents = computed(() => {
-//     // return acceptedStudents.value.filter((student) => {
-//     //     const searchString = `${student.firstName} ${student.lastName} ${student.email} ${student.phone} ${student.assignedQuizzes.join(', ')}`.toLowerCase();
-//     //     return searchString.includes(searchQuery.value.toLowerCase());
-//     // });
-// });
 
-// // Toggle quiz assignment
-// const toggleQuizAssignment = (student) => {
-//     if (selectedStudents.value.includes(student)) {
-//         selectedStudents.value = selectedStudents.value.filter((s) => s !== student);
-//     } else {
-//         selectedStudents.value.push(student);
-//     }
-//     showAssignDiv.value = selectedStudents.value.length > 0;
-// };
-
-// // Check if a quiz is already assigned
+// Check if the quiz is already assigned to the student
 const isQuizAlreadyAssigned = (student) => {
     return student.assignedQuizzes.includes(selectedQuiz.value);
 };
 
-// // Assign the selected quiz to selected students
-// const assignQuizToStudents = async () => {
-//     try {
-//         await store.dispatch('assignQuiz', {
-//             students: selectedStudents.value,
-//             quiz: selectedQuiz.value,
-//         });
-//         // Clear selected students and hide the assignment div
-//         selectedStudents.value = [];
-//         showAssignDiv.value = false;
-//         // Uncheck all checkboxes
-//         document.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => (checkbox.checked = false));
-//     } catch (error) {
-//         console.error('Failed to assign quiz:', error);
-//     }
-// };
-// const availableQuizzes = ref([
-//     { id: 1, title: 'Quiz 1' },
-//     { id: 2, title: 'Quiz 2' },
-//     { id: 3, title: 'Quiz 3' },
-// ]);
-// const pendingStudents = ref([
-//     {
-//         firstName: 'Mark',
-//         lastName: 'Taylor',
-//         email: 'mark.taylor@example.com',
-//         phone: '555-123-4567',
-//         cv: '/path/to/cv/mark_taylor.pdf',
-//     },
-//     {
-//         firstName: 'Alice',
-//         lastName: 'Johnson',
-//         email: 'alice.johnson@example.com',
-//         phone: '444-987-6543',
-//         cv: '/path/to/cv/alice_johnson.pdf',
-//     },
-//     // Add more pending students as needed
-// ]);
-// const acceptedStudents = ref([
-//     {
-//         firstName: 'John',
-//         lastName: 'Doe',
-//         email: 'john.doe@example.com',
-//         phone: '123-456-7890',
-//         cv: '/path/to/cv/john_doe.pdf',
-//         assignedQuizzes: ['Quiz 1'],
-//     },
-//     {
-//         firstName: 'Jane',
-//         lastName: 'Smith',
-//         email: 'jane.smith@example.com',
-//         phone: '987-654-3210',
-//         cv: '/path/to/cv/jane_smith.pdf',
-//         assignedQuizzes: ['Quiz 2'],
-//     },
-//     // Add more students as needed
-// ]);
-// // Accept student and move from pending to accepted
-// const acceptStudent = (index) => {
-//     const acceptedStudent = pendingStudents.value.splice(index, 1)[0];
-//     store.commit('acceptStudent', acceptedStudent);
-
-// };
-
-
-// // Reject student and remove from pending list
-// const rejectStudent = (index) => {
-//     pendingStudents.value.splice(index, 1);
-// };
 </script>
+
 <style scoped>
 h3 {
     margin-bottom: 20px;
