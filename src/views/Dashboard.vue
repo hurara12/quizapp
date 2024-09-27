@@ -41,9 +41,9 @@ export default {
       { title: "Manage Students", description: "Manage Student and assign Quiz", link: "/managestudents" },
       { title: "View Results", description: "Check quiz results.", link: "/viewresult" },
       { title: "Quiz", description: "Create and Manage Quiz", link: "/createquiz" },
-      { title: "Profile Management", description: "Manage your profile.", link: "/profile" },
-      { title: "Settings", description: "Adjust your settings.", link: "/settings" },
+      { title: "update Profile", description: "Update your Password", link: "/updatepassword" },
       { title: "Attempt Quiz", description: "View and attempt Quizes", link: "/quizcomponent" },
+      { title: "Quiz temp", description: "AA", link: "/viewandselectquiz" },
     ]);
 
     const router = useRouter();

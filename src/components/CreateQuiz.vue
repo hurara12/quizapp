@@ -12,7 +12,7 @@
                                 placeholder="Enter Quiz Name" required />
                         </div>
 
-                        <div class="questions-section overflow-auto" style="max-height: 400px;">
+                        <div class="questions-section overflow-auto" style="height: 400px;">
                             <div v-for="(question, index) in quiz.questions" :key="index" class="card mb-4 p-3">
                                 <h5>Question {{ index + 1 }}</h5>
                                 <div class="input-box input-group mb-3">

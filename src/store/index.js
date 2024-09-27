@@ -131,7 +131,21 @@ export default createStore({
         return false;
       }
     },
+
     // Auth Actions
+    async updatePassword({ commit }, password) {
+      try {
+        console.log('Cred ', password);
+        const response = await axios.post('http://192.168.15.243:8000/api/password/forgot', {
+          password
+        }); // Simulated API call
+        console.log('data ', response.data);
+        return true;
+      } catch (error) {
+        console.error('Error', error.response ? error.response.data : error);
+        return false;
+      }
+    },
     async login({ commit }, credentials) {
       try {
         console.log('Cred ', credentials);

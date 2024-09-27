@@ -10,49 +10,52 @@
                 <div class="d-flex mb-3">
                     <input type="text" v-model="searchQuery" class="form-control me-2"
                         placeholder="Search by Name, Phone, Email, or Quizzes" />
-                    <select v-model="filterStatus" class="form-select">
-                        <option value="accepted" class="text-success">Accepted</option>
+                    <select v-model="filterStatus" class="form-select"
+                        :class="{ 'text-success': filterStatus === 'approved', 'text-danger': filterStatus === 'rejected' }">
+                        <option value="approved" class="text-success">Accepted</option>
                         <option value="rejected" class="text-danger">Rejected</option>
                     </select>
+
                 </div>
 
                 <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>First Name</th>
-                                <th>Last Name</th>
+                                <th>Name</th>
                                 <th>Email</th>
-                                <th>Phone No</th>
                                 <th>View CV</th>
-                                <th v-if="filterStatus === 'accepted'">Assigned</th>
-                                <th v-if="filterStatus === 'accepted'">Assign</th>
-                                <th v-if="filterStatus === 'rejected'">Status</th>
+                                <th>Status</th>
+                                <th v-if="filterStatus === 'approved'">Assigned</th>
+                                <th v-if="filterStatus === 'approved'">Assign</th>
                                 <th v-if="filterStatus === 'rejected'">Rejected At</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="(student, index) in filteredStudents" :key="index">
-                                <td>{{ student.firstName }}</td>
-                                <td>{{ student.lastName }}</td>
+                                <td class="firstCapital">{{ student.name }}</td>
                                 <td>{{ student.email }}</td>
-                                <td>{{ student.phone }}</td>
-                                <td><a :href="student.cv" target="_blank" class="btn btn-info btn-sm">View CV</a></td>
-                                <td v-if="filterStatus === 'accepted'">{{ student.assignedQuizzes.join(', ') }}</td>
-                                <td v-if="filterStatus === 'accepted'">
+                                <td><a :href="student.cv_path" target="_blank" class="btn btn-info btn-sm">View CV</a>
+                                </td>
+                                <td class="firstCapital"
+                                    :class="{ 'text-success': filterStatus === 'approved', 'text-danger': filterStatus === 'rejected' }">
+                                    {{ student.status }}</td>
+                                <td v-if="filterStatus === 'approved'">{{ student.created_at }}</td>
+                                <td v-if="filterStatus === 'approved'">
                                     <input type="checkbox"
                                         :disabled="isQuizAlreadyAssigned(student) || student.status === 'rejected'"
                                         @change="toggleQuizAssignment(student)" />
                                 </td>
-                                <td v-if="filterStatus === 'rejected'">{{ student.status }}</td>
-                                <td v-if="filterStatus === 'rejected'">{{ student.rejectedAt }}</td>
+
+                                <td class="firstCapital" v-if="filterStatus === 'rejected'">{{ student.updated_at }}
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
                 <!-- Assign Quiz Div -->
-                <div v-if="showAssignDiv && filterStatus === 'accepted'" class="my-4">
+                <div v-if="showAssignDiv && filterStatus === 'approved'" class="my-4">
                     <label for="availableQuizzes" class="form-label">Available Quizzes</label>
                     <select v-model="selectedQuiz" id="availableQuizzes" class="form-select mb-3" required>
                         <option value="" disabled>Select a Quiz</option> <!-- Default option -->
@@ -85,15 +88,30 @@
             <div class="col-md-4">
                 <h3>Pending Students</h3>
                 <div class="card-container" style="max-height: 600px; overflow-y: auto;">
-                    <div class="card mb-3" v-for="(student, index) in pendingStudents" :key="index">
+                    <div class="card mb-3"
+                        v-for="(student, index) in pendingStudents.filter(student => student.status === 'pending')"
+                        :key="index">
                         <div class="card-body">
-                            <h5 class="card-title"><strong>Name:</strong> {{ student.name }}</h5>
+                            <h5 class="card-title firstCapital"><strong>Name:</strong> {{ student.name }}</h5>
                             <p class="card-text"><strong>Email:</strong> {{ student.email }}</p>
-                            <p class="card-text"><strong>Status:</strong> {{ student.status }}</p>
-                            <a :href="student.cv" target="_blank" class="btn btn-info btn-sm mb-2">View CV</a>
+                            <p class="card-text">
+                                <strong>Status: </strong>
+                                <span class="text-warning firstCapital">{{ student.status }}</span>
+                            </p>
+                            <a :href="student.cv_path" target="_blank" class="btn btn-info btn-sm mb-2">View CV</a>
                             <div class="d-flex justify-content-between">
-                                <button class="btn btn-success" @click="acceptStudent(student.id)">Accept</button>
-                                <button class="btn btn-danger" @click="rejectStudent(student.id)">Reject</button>
+                                <button class="btn btn-success" :disabled="loadingComp[student.id]"
+                                    @click="acceptStudent(student.id)">Accept
+                                    <font-awesome-icon v-if="loadingComp[student.id]" :icon="['fas', 'circle-notch']"
+                                        class="fa-lg fa-spin" style="color: white;">
+                                    </font-awesome-icon>
+                                </button>
+                                <button class="btn btn-danger" :disabled="loadingCompReject[student.id]"
+                                    @click="rejectStudent(student.id)">Reject
+                                    <font-awesome-icon v-if="loadingCompReject[student.id]"
+                                        :icon="['fas', 'circle-notch']" class="fa-lg fa-spin" style="color: white;">
+                                    </font-awesome-icon>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -108,6 +126,8 @@ import { ref, watch, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
 
 const store = useStore();
+let loadingComp = ref({});
+let loadingCompReject = ref({});
 
 onMounted(() => {
     store.dispatch('fetchPendingStudents'); // Fetch pending students from the backend
@@ -117,14 +137,6 @@ onMounted(() => {
 // Get pending students from the store
 const pendingStudents = computed(() => store.getters.pendingStudents);
 // Sample Data
-const acceptedStudents = ref([
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@example.com', phone: '987-654-3210', cv: '/path/to/cv/jane_smith.pdf', assignedQuizzes: ['Quiz 2'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'Bob', lastName: 'Brown', email: 'bob.brown@example.com', phone: '111-222-3333', cv: '/path/to/cv/bob_brown.pdf', assignedQuizzes: [], status: 'rejected', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'Mary', lastName: 'Jones', email: 'mary.jones@example.com', phone: '444-555-6666', cv: '/path/to/cv/mary_jones.pdf', assignedQuizzes: [], status: 'rejected', rejectedAt: new Date().toLocaleDateString() },
-
-
-]);
 
 const availableQuizzes = ref([
     { id: 1, title: 'Quiz 1' },
@@ -136,7 +148,7 @@ const selectedStudents = ref([]);
 const selectedQuiz = ref('');
 const showAssignDiv = ref(false);
 const searchQuery = ref('');
-const filterStatus = ref('accepted'); // Filter for accepted/rejected students
+const filterStatus = ref('approved'); // Filter for accepted/rejected students
 
 const startDateTime = ref('');
 const endDateTime = ref('');
@@ -226,6 +238,7 @@ const assignQuizToStudents = () => {
 // Accept student and move to accepted list
 const acceptStudent = async (id) => {
     console.log(id);
+    loadingComp.value[id] = true;
     // store.dispatch('acceptStudent', email);
     // const acceptedStudent = pendingStudents.value.splice(index, 1)[0];
     // acceptedStudents.value.push({ ...acceptedStudent, assignedQuizzes: [], status: 'accepted' });
@@ -233,13 +246,17 @@ const acceptStudent = async (id) => {
         const success = await store.dispatch('acceptStudent', id);
         if (success) {
             console.log(success)
+            await store.dispatch('fetchPendingStudents');
         }
     } catch (error) {
         console.error('Error submitting profile:', error);
+    } finally {
+        loadingComp.value[id] = false;
     }
 };
 const rejectStudent = async (id) => {
     console.log(id);
+    loadingCompReject.value[id] = true;
     // store.dispatch('acceptStudent', email);
     // const acceptedStudent = pendingStudents.value.splice(index, 1)[0];
     // acceptedStudents.value.push({ ...acceptedStudent, assignedQuizzes: [], status: 'accepted' });
@@ -247,9 +264,12 @@ const rejectStudent = async (id) => {
         const success = await store.dispatch('rejectStudent', id);
         if (success) {
             console.log(success)
+            await store.dispatch('fetchPendingStudents');
         }
     } catch (error) {
         console.error('Error submitting profile:', error);
+    } finally {
+        loadingCompReject.value[id] = false;
     }
 };
 
@@ -259,12 +279,10 @@ const rejectStudent = async (id) => {
 
 // Filter students based on search query and status
 const filteredStudents = computed(() => {
-    return acceptedStudents.value.filter(student => {
-        const matchesQuery = student.firstName.toLowerCase().includes(searchQuery.value.toLowerCase())
-            || student.lastName.toLowerCase().includes(searchQuery.value.toLowerCase())
+    return pendingStudents.value.filter(student => {
+        const matchesQuery = student.name.toLowerCase().includes(searchQuery.value.toLowerCase())
             || student.email.toLowerCase().includes(searchQuery.value.toLowerCase())
-            || student.phone.toLowerCase().includes(searchQuery.value.toLowerCase())
-            || student.assignedQuizzes.join(', ').toLowerCase().includes(searchQuery.value.toLowerCase());
+            || student.status.toLowerCase().includes(searchQuery.value.toLowerCase());
 
         return matchesQuery && student.status === filterStatus.value;
     });
@@ -272,7 +290,7 @@ const filteredStudents = computed(() => {
 
 // Check if the quiz is already assigned to the student
 const isQuizAlreadyAssigned = (student) => {
-    return student.assignedQuizzes.includes(selectedQuiz.value);
+    return false;
 };
 
 </script>
@@ -311,5 +329,9 @@ h3 {
 
 .mb-3 {
     margin-bottom: 1rem;
+}
+
+.firstCapital {
+    text-transform: capitalize;
 }
 </style>
