@@ -31,7 +31,7 @@
                         <p>Remaining Time for this Question: <span class="text-danger">{{ remainingTime }}
                                 Seconds</span></p>
 
-                        <!-- Question and Options -->
+                        <!--c Question and Options -->
                         <div class="questions-section">
                             <div class="card mb-4 p-3">
                                 <h5 class="text-start">{{ currentQuestionIndex + 1 + ". " + currentQuestion.text }}</h5>
