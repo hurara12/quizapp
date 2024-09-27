@@ -1,7 +1,7 @@
 <template>
-    <div class="main-wrap">
-        <div class="container-fluid d-flex justify-content-center">
-            <div class="form-container justify-content-center p-5 shadow">
+    <div class="main-wrap container d-flex justify-content-center align-items-center min-vh-100">
+        <div class="container-fluid d-flex mt-5 justify-content-center">
+            <div class="form-container mt-5 justify-content-center p-5 shadow">
                 <h2 class="text-center mb-2">Submit Your Profile</h2>
                 <form @submit.prevent="handleSubmitProfile" class="login-form form-container needs-validation">
                     <div v-if="alertMessage" :class="alertClass" role="alert">{{ alertMessage }}</div>
@@ -13,21 +13,9 @@
                             <!-- <i class="fa-solid fa-user fa-lg" style="color: #63E6BE;"></i> -->
                         </span>
                         <div class="form-floating">
-                            <input v-model="firstname" type="text" class="input-field form-control" id="firstname"
-                                placeholder="Enter First Name" required />
-                            <label for="firstname">First Name</label>
-                        </div>
-                    </div>
-
-                    <!-- Last Name Input -->
-                    <div class="input-box input-group my-3 me-5">
-                        <span class="input-group-text">
-                            <font-awesome-icon icon="user" class="fa-lg" style="color: #63E6BE;"></font-awesome-icon>
-                        </span>
-                        <div class="form-floating">
-                            <input v-model="lastname" type="text" class="input-field form-control" id="lastname"
-                                placeholder="Enter Last Name" required />
-                            <label for="lastname">Last Name</label>
+                            <input v-model="name" type="text" class="input-field form-control" id="name"
+                                placeholder="Enter Name" required />
+                            <label for="name">Name</label>
                         </div>
                     </div>
 
@@ -42,34 +30,6 @@
                             <input v-model="email" type="email" class="input-field form-control"
                                 placeholder="Enter Email" required />
                             <label for="email">Email</label>
-                        </div>
-                    </div>
-
-                    <!-- Password Input -->
-                    <div class="input-box input-group my-3 me-5">
-                        <span class="input-group-text">
-                            <font-awesome-icon icon="lock" class="fa-lg" style="color: #63E6BE;"></font-awesome-icon>
-                        </span>
-                        <div class="form-floating">
-                            <input v-model="password" :type="showPassword ? 'text' : 'password'"
-                                class="input-field form-control" placeholder="Enter Password" required />
-                            <label for="password">Password</label>
-                        </div>
-                    </div>
-                    <div class="form-check mt-2">
-                        <input v-model="showPassword" type="checkbox" class="form-check-input" id="showPassword" />
-                        <label class="form-check-label" for="showPassword">Show Password</label>
-                    </div>
-
-                    <!-- Phone Number Input -->
-                    <div class="input-box input-group my-3 me-5">
-                        <span class="input-group-text">
-                            <font-awesome-icon icon="phone" class="fa-lg" style="color: #63E6BE;"></font-awesome-icon>
-                        </span>
-                        <div class="form-floating">
-                            <input v-model="phone" type="tel" class="input-field form-control" id="phone"
-                                placeholder="Enter Phone Number" required />
-                            <label for="phone">Phone Number</label>
                         </div>
                     </div>
                     <!-- CV Upload -->
@@ -108,8 +68,7 @@ import { useStore } from 'vuex';
 export default {
     name: 'SubmitProfile',
     setup() {
-        const firstname = ref('');
-        const lastname = ref('');
+        const name = ref('');
         const email = ref('');
         const password = ref('');
         const showPassword = ref(false);
@@ -124,7 +83,7 @@ export default {
 
         const handleSubmitProfile = async () => {
             const credentials = {
-                name: `${firstname.value} ${lastname.value}`,  // Ensure correct concatenation
+                name: name.value,  // Ensure correct concatenation
                 email: email.value,
                 cv: cv.value,
             };
@@ -167,12 +126,8 @@ export default {
         };
 
         return {
-            firstname,
-            lastname,
+            name,
             email,
-            password,
-            showPassword,
-            phone,
             cv,
             alertMessage,
             alertClass,

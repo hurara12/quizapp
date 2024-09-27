@@ -8,6 +8,7 @@ import ManageStudents from '@/components/ManageStudents.vue';
 import ViewResult from '@/components/ViewResult.vue';
 import ViewSoloResult from '@/components/ViewSoloResult.vue';
 import ViewandSelectQuiz from '@/components/ViewandSelectQuiz.vue';
+import CreateQuiz from '@/components/CreateQuiz.vue';
 
 const routes = [
   {
@@ -58,6 +59,11 @@ const routes = [
     path: '/viewandselectquiz',  // Define the route for profile submission
     name: 'ViewandSelectQuiz',
     component: ViewandSelectQuiz,
+  },
+  {
+    path: '/createquiz',  // Define the route for profile submission
+    name: 'CreateQuiz',
+    component: CreateQuiz,
   }
 ];
 

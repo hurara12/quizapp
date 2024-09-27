@@ -40,10 +40,10 @@ export default {
       { title: "Manager Roles", description: "View and Edit Manager requests.", link: "/managerroles" },
       { title: "Manage Students", description: "Manage Student and assign Quiz", link: "/managestudents" },
       { title: "View Results", description: "Check quiz results.", link: "/viewresult" },
-      { title: "Student Requests", description: "Approve or reject student requests.", link: "/student-requests" },
+      { title: "Quiz", description: "Create and Manage Quiz", link: "/createquiz" },
       { title: "Profile Management", description: "Manage your profile.", link: "/profile" },
       { title: "Settings", description: "Adjust your settings.", link: "/settings" },
-      { title: "Quiz", description: "View and Edit Manager requests.", link: "/quizcomponent" },
+      { title: "Attempt Quiz", description: "View and attempt Quizes", link: "/quizcomponent" },
     ]);
 
     const router = useRouter();

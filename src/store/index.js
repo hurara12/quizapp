@@ -2,7 +2,7 @@ import { createStore } from 'vuex';
 import axios from 'axios';
 
 function loadFromLocalStorage(dataToGet) {
-  const data = JSON.parse(localStorage.getItem(dataToGet)) || [];
+  const data = localStorage.getItem(dataToGet) || [];
   return data;
 }
 
@@ -19,6 +19,7 @@ export default createStore({
     user: null,
     quizzes: [], // Stores all quiz categories
     selectedQuiz: null, // Stores the currently selected quiz
+    pendingStudents: [], // Holds the fetched pending students data
   },
   mutations: {
     // Auth Mutations
@@ -38,6 +39,23 @@ export default createStore({
     },
     selectQuiz(state, quiz) {
       state.selectedQuiz = quiz;
+    },
+
+    SET_PENDING_STUDENTS(state, students) {
+      state.pendingStudents = students;
+    },
+    // ACCEPT_STUDENT(state, studentIndex) {
+    //   // Move the student from pending to accepted
+    //   const acceptedStudent = state.pendingStudents.splice(studentIndex, 1)[0];
+    //   acceptedStudent.status = 'accepted';
+    //   // Here, you might want to push the student to an acceptedStudents list if you have it
+    // },
+    REJECT_STUDENT(state, studentIndex) {
+      // Move the student from pending to rejected
+      const rejectedStudent = state.pendingStudents.splice(studentIndex, 1)[0];
+      rejectedStudent.status = 'rejected';
+      rejectedStudent.rejectedAt = new Date().toLocaleDateString(); // Add rejection date
+      // You can also add this to a rejectedStudents array in state
     },
     // Student and Quiz Mutations
     //   SET_ACCEPTED_STUDENTS(state, students) {
@@ -76,6 +94,43 @@ export default createStore({
     //   },
   },
   actions: {
+
+    async fetchPendingStudents({ commit }) {
+      try {
+        const response = await axios.get('http://192.168.15.243:8000/api/admin/pending-students'); // Replace with actual API
+        commit('SET_PENDING_STUDENTS', response.data);
+        console.log("P", response.data);
+      } catch (error) {
+        console.error('Error fetching pending students:', error);
+      }
+    },
+    async acceptStudent({ commit }, id) {
+
+      try {
+        console.log('Cred ', id);
+        const response = await axios.post('http://192.168.15.243:8000/api/admin/approve', {
+          id
+        }); // Simulated API call
+        console.log(response.data);
+        return true;
+      } catch (error) {
+        console.error('Error', error.response ? error.response.data : error);
+        return false;
+      }
+    },
+    async rejectStudent({ commit }, id) {
+      try {
+        console.log('Cred ', id);
+        const response = await axios.post('http://192.168.15.243:8000/api/admin/reject', {
+          id
+        }); // Simulated API call
+        console.log(response.data);
+        return true;
+      } catch (error) {
+        console.error('Error', error.response ? error.response.data : error);
+        return false;
+      }
+    },
     // Auth Actions
     async login({ commit }, credentials) {
       try {
@@ -84,11 +139,12 @@ export default createStore({
           email: credentials.email,
           password: credentials.password,
         }); // Simulated API call
-        // const { access_token, token_type, expires_in } = response.data.token;
         console.log('data ', response.data);
-        // commit('SET_TOKEN', access_token);
-        //localStorage.setItem('token', access_token);
-        //localStorage.setItem('role', response.data.data.role);
+        const { access_token, token_type, expires_in } = response.data;
+        console.log('data ', response.data);
+        commit('SET_TOKEN', access_token);
+        localStorage.setItem('token', access_token);
+        localStorage.setItem('role', response.data.user.roles);
         return true;
       } catch (error) {
         console.error('Error', error.response ? error.response.data : error);
@@ -102,8 +158,7 @@ export default createStore({
         data.append('name', formData.name);
         data.append('email', formData.email);
         data.append('cv', formData.cv); // Assuming `formData.cv` is a file input
-
-        const response = await axios.post('http://192.168.15.243:8000/api/register-student', data, {
+        const response = await axios.post('http://192.168.15.243:8000/api/register-student', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -115,6 +170,36 @@ export default createStore({
         return false;
       }
     },
+    async addRole({ commit }, formData) {
+      try {
+        console.log('Received formData:', formData);
+
+        const data = new FormData();
+        data.append('name', formData.name);
+        data.append('email', formData.email);
+        data.append('role', formData.role);
+        data.append('token', loadFromLocalStorage("token"));
+
+        // Log FormData contents
+        for (let [key, value] of data.entries()) {
+          console.log(`${key}: ${value}`);
+        }
+
+        const response = await axios.post('http://192.168.15.76:8000/api/admin/add-user', data, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+
+        console.log('Response data:', response.data);
+        // You can also commit any necessary mutations here
+        return response.data; // Return the response data for further handling
+      } catch (error) {
+        console.error('Error adding role:', error.response ? error.response.data : error.message);
+        return false; // Return false to indicate failure
+      }
+    },
+
     async fetchQuizzes({ commit }) {
       try {
         // Fetch quizzes from your db.json (update URL with the correct path to your db.json file)
@@ -208,7 +293,9 @@ export default createStore({
     // Auth Getters
     isAuthenticated: (state) => !!state.token,
     getUser: (state) => state.user,
-
+    pendingStudents(state) {
+      return state.pendingStudents;
+    },
     // Student and Quiz Getters
     // getAcceptedStudents: (state) => state.acceptedStudents,
     // getPendingStudents: (state) => state.pendingStudents,

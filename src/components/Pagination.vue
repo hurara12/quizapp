@@ -9,6 +9,7 @@
         <li v-if="currentPage > 3" class="page-item">
             <a class="page-link" href="#" @click.prevent="goToPage(1)">1</a>
         </li>
+
         <li v-if="currentPage > 3" class="page-item disabled">
             <span class="page-link">...</span>
         </li>

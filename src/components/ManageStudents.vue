@@ -80,20 +80,20 @@
 
             </div>
 
+
             <!-- Right Side: Pending Students -->
             <div class="col-md-4">
                 <h3>Pending Students</h3>
                 <div class="card-container" style="max-height: 600px; overflow-y: auto;">
                     <div class="card mb-3" v-for="(student, index) in pendingStudents" :key="index">
                         <div class="card-body">
-                            <h5 class="card-title">{{ student.firstName }} {{ student.lastName }}</h5>
+                            <h5 class="card-title"><strong>Name:</strong> {{ student.name }}</h5>
                             <p class="card-text"><strong>Email:</strong> {{ student.email }}</p>
-                            <p class="card-text"><strong>Phone No:</strong> {{ student.phone }}</p>
-                            <p class="card-text"><strong>Status:</strong> Pending</p>
+                            <p class="card-text"><strong>Status:</strong> {{ student.status }}</p>
                             <a :href="student.cv" target="_blank" class="btn btn-info btn-sm mb-2">View CV</a>
                             <div class="d-flex justify-content-between">
-                                <button class="btn btn-success" @click="acceptStudent(index)">Accept</button>
-                                <button class="btn btn-danger" @click="rejectStudent(index)">Reject</button>
+                                <button class="btn btn-success" @click="acceptStudent(student.id)">Accept</button>
+                                <button class="btn btn-danger" @click="rejectStudent(student.id)">Reject</button>
                             </div>
                         </div>
                     </div>
@@ -104,46 +104,25 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
 
+const store = useStore();
+
+onMounted(() => {
+    store.dispatch('fetchPendingStudents'); // Fetch pending students from the backend
+});
+
+
+// Get pending students from the store
+const pendingStudents = computed(() => store.getters.pendingStudents);
 // Sample Data
 const acceptedStudents = ref([
     { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
     { firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@example.com', phone: '987-654-3210', cv: '/path/to/cv/jane_smith.pdf', assignedQuizzes: ['Quiz 2'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
     { firstName: 'Bob', lastName: 'Brown', email: 'bob.brown@example.com', phone: '111-222-3333', cv: '/path/to/cv/bob_brown.pdf', assignedQuizzes: [], status: 'rejected', rejectedAt: new Date().toLocaleDateString() },
     { firstName: 'Mary', lastName: 'Jones', email: 'mary.jones@example.com', phone: '444-555-6666', cv: '/path/to/cv/mary_jones.pdf', assignedQuizzes: [], status: 'rejected', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'Mary', lastName: 'Jones', email: 'mary.jones@example.com', phone: '444-555-6666', cv: '/path/to/cv/mary_jones.pdf', assignedQuizzes: [], status: 'rejected', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
-    { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', cv: '/path/to/cv/john_doe.pdf', assignedQuizzes: ['Quiz 1'], status: 'accepted', rejectedAt: new Date().toLocaleDateString() },
 
-
-]);
-
-const pendingStudents = ref([
-    { firstName: 'Mark', lastName: 'Taylor', email: 'mark.taylor@example.com', phone: '555-123-4567', cv: '/path/to/cv/mark_taylor.pdf' },
-    { firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '444-987-6543', cv: '/path/to/cv/alice_johnson.pdf' },
-    { firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '444-987-6543', cv: '/path/to/cv/alice_johnson.pdf' },
-    { firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '444-987-6543', cv: '/path/to/cv/alice_johnson.pdf' },
-    { firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '444-987-6543', cv: '/path/to/cv/alice_johnson.pdf' },
-    { firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '444-987-6543', cv: '/path/to/cv/alice_johnson.pdf' },
-    { firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '444-987-6543', cv: '/path/to/cv/alice_johnson.pdf' },
-    { firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '444-987-6543', cv: '/path/to/cv/alice_johnson.pdf' },
 
 ]);
 
@@ -245,17 +224,37 @@ const assignQuizToStudents = () => {
 };
 
 // Accept student and move to accepted list
-const acceptStudent = (index) => {
-    const acceptedStudent = pendingStudents.value.splice(index, 1)[0];
-    acceptedStudents.value.push({ ...acceptedStudent, assignedQuizzes: [], status: 'accepted' });
+const acceptStudent = async (id) => {
+    console.log(id);
+    // store.dispatch('acceptStudent', email);
+    // const acceptedStudent = pendingStudents.value.splice(index, 1)[0];
+    // acceptedStudents.value.push({ ...acceptedStudent, assignedQuizzes: [], status: 'accepted' });
+    try {
+        const success = await store.dispatch('acceptStudent', id);
+        if (success) {
+            console.log(success)
+        }
+    } catch (error) {
+        console.error('Error submitting profile:', error);
+    }
+};
+const rejectStudent = async (id) => {
+    console.log(id);
+    // store.dispatch('acceptStudent', email);
+    // const acceptedStudent = pendingStudents.value.splice(index, 1)[0];
+    // acceptedStudents.value.push({ ...acceptedStudent, assignedQuizzes: [], status: 'accepted' });
+    try {
+        const success = await store.dispatch('rejectStudent', id);
+        if (success) {
+            console.log(success)
+        }
+    } catch (error) {
+        console.error('Error submitting profile:', error);
+    }
 };
 
 // Reject student and move to rejected list
 // Reject student and move to rejected list
-const rejectStudent = (index) => {
-    const rejectedStudent = pendingStudents.value.splice(index, 1)[0];
-    rejectedStudents.value.push({ ...rejectedStudent, assignedQuizzes: [], status: 'rejected', rejectedAt: new Date().toLocaleDateString() });
-};
 
 
 // Filter students based on search query and status
@@ -270,7 +269,6 @@ const filteredStudents = computed(() => {
         return matchesQuery && student.status === filterStatus.value;
     });
 });
-
 
 // Check if the quiz is already assigned to the student
 const isQuizAlreadyAssigned = (student) => {
