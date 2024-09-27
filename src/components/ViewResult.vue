@@ -17,14 +17,14 @@
             <transition-group name="fade-slide" tag="div" class="d-flex flex-wrap">
                 <div v-for="(item, index) in paginatedData" :key="index" class="col-12 col-md-6 col-lg-4 p-4">
                     <div class="card custom-card user-card p-3" :style="{ height: '500px' }">
-                        <div class="card-body text-center">
+                        <div class="card-body text-start">
                             <template v-if="viewMode === 'student'">
-                                <h6 class="card-subtitle mb-2 text-muted">User Information</h6>
-                                <h5 class="card-title">{{ item.name }}</h5>
-                                <p class="card-text">{{ item.email }}</p>
+                                <h5 class="card-subtitle mb-2 text-muted text-center">Student Information</h5>
+                                <p class="card-text"><strong>Name: </strong>{{ item.name }}</p>
+                                <p class="card-text"><strong>Email: </strong>{{ item.email }}</p>
                                 <p>Attempted Quizzes:</p>
                                 <ul class="list-unstyled">
-                                    <li v-for="(quiz, idx) in item.quizzes.slice(0, 3)" :key="idx">
+                                    <li v-for="(quiz, idx) in item.quizzes.slice(0, 7)" :key="idx">
                                         <strong>{{ quiz.name }}</strong> - {{ quiz.marks }} marks
                                     </li>
                                 </ul>
@@ -78,6 +78,12 @@ export default {
                 phone: "+49 258-627-6644",
                 quizzes: [
                     { name: "Quiz 1", marks: 85 },
+                    { name: "Quiz 2", marks: 75 },
+                    { name: "Quiz 3", marks: 90 },
+                    { name: "Quiz 4", marks: 65 },
+                    { name: "Quiz 2", marks: 75 },
+                    { name: "Quiz 3", marks: 90 },
+                    { name: "Quiz 4", marks: 65 },
                     { name: "Quiz 2", marks: 75 },
                     { name: "Quiz 3", marks: 90 },
                     { name: "Quiz 4", marks: 65 },
@@ -221,6 +227,11 @@ export default {
 </script>
 
 <style scoped>
+p {
+    padding: 3px;
+    margin: 0;
+}
+
 .user-card {
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);

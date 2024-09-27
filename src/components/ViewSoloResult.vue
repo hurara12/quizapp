@@ -54,12 +54,13 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { useRouter, useRoute } from "vue-router";
 
 export default {
     setup() {
         const router = useRouter();
+        const route = useRoute();
         const userData = ref({
             firstName: "John",
             lastName: "Doe",
@@ -116,21 +117,44 @@ export default {
             };
         });
 
-        // const closeScreen = () => {
-        //     isZoomOut.value = true;
-        //     setTimeout(() => {
-        //         router.push("/viewresult");
-        //     }, 1000);
-        // };
+
+        const closeScreen = () => {
+            isZoomOut.value = true;
+            setTimeout(() => {
+                router.replace("/viewresult");
+            }, 1000);
+        };
+
+        // Detect back navigation or route leave
+        const handleBackNavigation = () => {
+            console.log("Back button or navigation detected!");
+            closeScreen();
+        };
+
+        // Navigation guard for detecting when the user tries to leave the route
+        onMounted(() => {
+            route.meta.handleBackNavigation = handleBackNavigation; // Assign it to meta for later access
+        });
 
         return {
             userData,
             profileFields,
             profileInformation,
             companyDetails,
-            // closeScreen,
+            closeScreen,
             isZoomOut,
         };
+    },
+    beforeRouteLeave(to, from, next) {
+        // Execute this when user presses back or navigates away from the route
+        if (this.isZoomOut === false) {
+            this.closeScreen();
+            setTimeout(() => {
+                next(); // Continue with the navigation after animation
+            }, 1000);
+        } else {
+            next(); // Continue immediately if already zoomed out
+        }
     },
 };
 </script>

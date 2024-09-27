@@ -1,263 +1,523 @@
 <template>
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-6">
-                <div class="camera-box">
-                    <video ref="camera" autoplay playsinline class="w-100"></video>
-                </div>
-                <canvas ref="frequencyCanvas" class="w-100 mt-3"></canvas>
+    <div class="combined-container">
+
+        <!-- I Agree Screen -->
+        <div v-if="!started" class="start-container">
+            <div class="instruction-card">
+                <h3>Quiz Instructions</h3>
+                <p>Please read the following instructions carefully:</p>
+                <ul>
+                    <li>Each question has 4-choice answers.</li>
+                    <li>Select the option that best answers the question.</li>
+                    <li>You cannot change your answer once selected.</li>
+                    <li>Time for each question is 30 seconds</li>
+                    <li>Each Question is of 1 mark</li>
+                    <li>Good luck!</li>
+                </ul>
+                <button class="btn btn-outline-danger" @click="startQuizAndRecording">I Agree</button>
             </div>
-            <div class="col-6">
-                <div class="mb-4">
-                    <label for="quizSelect" class="form-label">Select a Quiz</label>
-                    <select id="quizSelect" class="form-select" v-model="selectedQuizId" @change="loadSelectedQuiz">
-                        <option v-for="quiz in quizzes" :key="quiz.id" :value="quiz.id">{{ quiz.title }}</option>
-                    </select>
-                </div>
+        </div>
 
-                <div v-if="selectedQuiz && !quizStarted" class="mb-4">
-                    <button class="btn btn-success" @click="startQuiz">Start Quiz</button>
-                </div>
+        <!-- Main Content: Quiz and Camera -->
+        <div v-else class="main-content">
+            <!-- Quiz Section -->
+            <div class="row">
+                <div class="col-lg">
+                    <div class="quiz-creation-section border p-3"
+                        v-if="questions && questions.length > 0 && finished == false">
+                        <p>Total Questions: {{ questions.length }}</p>
+                        <p>Current Question: {{ currentQuestionIndex + 1 }} / {{ questions.length }}</p>
+                        <p>Time for Quiz: <span class="text-warning">{{ formatTime(quizTime) }}</span></p>
+                        <p>Remaining Time for this Question: <span class="text-danger">{{ remainingTime }}
+                                Seconds</span></p>
 
-                <div v-if="quizStarted && currentQuestion" class="card p-3">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5>{{ selectedQuiz?.title }}</h5>
-                        <span>Total Questions: {{ totalQuestions }}</span>
-                    </div>
-
-                    <div class="card-body">
-                        <p><strong>{{ currentQuestionIndex + 1 }}. {{ currentQuestion.question }}</strong></p>
-                        <div v-for="(option, index) in currentQuestion.options" :key="index" class="form-check">
-                            <input class="form-check-input" type="radio" :id="'option' + index" :value="option"
-                                v-model="selectedOption" />
-                            <label class="form-check-label" :for="'option' + index">{{ option }}</label>
+                        <!-- Question and Options -->
+                        <div class="questions-section">
+                            <div class="card mb-4 p-3">
+                                <h5 class="text-start">{{ currentQuestionIndex + 1 + ". " + currentQuestion.text }}</h5>
+                                <div class="options-container">
+                                    <div v-for="(option, index) in currentQuestion.options" :key="index"
+                                        class="option-row text-start">
+                                        <input type="radio" :id="'option' + index" class="btn-check"
+                                            v-model="selectedOption" :value="option" name="quiz-options" />
+                                        <label class="btn btn-outline-info option-label" :for="'option' + index">
+                                            {{ getOptionLabel(index) }}. {{ option }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Quiz Buttons -->
+                        <div class="quiz-buttons d-flex justify-content-end">
+                            <!-- Check if the current question is the last one -->
+                            <button v-if="currentQuestionIndex < questions.length - 1" class="btn btn-secondary me-3"
+                                @click="confirmSkip">
+                                Next
+                            </button>
+
+                            <button v-else class="btn btn-primary me-3" @click="confirmSkip">
+                                Submit
+                            </button>
+                            <!-- Hide "Finish Quiz" button if on the last question -->
+                            <button v-if="currentQuestionIndex < questions.length - 1" class="btn btn-danger"
+                                @click="confirmFinish">
+                                Finish Quiz
+                            </button>
+                        </div>
+
+                    </div>
+                    <div v-else-if="!finished">
+                        Loading questions...
                     </div>
 
-                    <div class="card-footer d-flex justify-content-between">
-                        <button v-if="currentQuestionIndex < totalQuestions - 1" class="btn btn-primary"
-                            @click="submitAnswer">Next</button>
-                        <button class="btn btn-danger" @click="finishQuiz">Finish Quiz</button>
+
+                    <!-- Skip Confirmation Modal -->
+                    <div v-if="showSkipConfirmation" class="confirmation-modal">
+                        <p>Are you sure you want to skip this question?</p>
+                        <button class="btn btn-warning me-3" @click="skipQuestion(true)">Yes</button>
+                        <button class="btn btn-secondary" @click="skipQuestion(false)">No</button>
+                    </div>
+
+                    <!-- Finish Confirmation Modal -->
+                    <div v-if="showFinishConfirmation" class="confirmation-modal">
+                        <p>You have remaining questions, are you sure you want to finish the quiz?</p>
+                        <button class="btn btn-danger me-3" @click="finishQuiz(true)">Yes</button>
+                        <button class="btn btn-secondary" @click="finishQuiz(false)">No</button>
                     </div>
                 </div>
 
-                <p class="text-danger mt-2" v-if="timeRemaining">Time remaining: {{ timeRemaining }} seconds</p>
+                <!-- Camera and Microphone Section -->
+                <div v-if="!finished" class="camera-section mt-4 col-lg-4">
+                    <div class="camera-box">
+                        <video ref="camera" autoplay playsinline class="w-100"></video>
+                    </div>
+                </div>
+            </div>
+            <!-- Results Section -->
+            <div v-if="finished" class="result-container">
+                <h3>Quiz Finished</h3>
+                <p>Marks: {{ correctAnswers }} / {{ questions.length }}</p>
+                <p>Attempted Questions: {{ attemptedQuestions }}</p>
+                <p>Correct Questions: {{ correctAnswers }}</p>
+                <button class="btn btn-secondary" @click="goBack">Go Back</button>
             </div>
         </div>
     </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted, onBeforeUnmount, onUnmounted } from 'vue';
-import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
+<script>
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useRouter, useRoute } from "vue-router";
+export default {
+    name: 'CombinedQuizAndRecording',
+    setup() {
+        // === Quiz State Variables ===
+        const router = useRouter();
+        const started = ref(false);
+        const finished = ref(false);
+        const currentQuestionIndex = ref(0);
+        const selectedOption = ref(null);
+        const quizTime = ref(0);
+        const remainingTime = ref(30);
+        const questions = ref([]);
+        const correctAnswers = ref(0);
+        const attemptedQuestions = ref(0);
+        const showSkipConfirmation = ref(false);
+        const showFinishConfirmation = ref(false);
+        let questionTimer = null;
+        let quizTimer = null;
 
-const router = useRouter();
-const store = useStore();
+        // === Camera and Recording State Variables ===
+        const camera = ref(null);
+        const streamRef = ref(null);
+        const mediaRecorder = ref(null);
+        const recordedChunks = ref([]);
+        const isRecording = ref(false);
 
-const camera = ref(null);
-const frequencyCanvas = ref(null);
-const streamRef = ref(null);
-const audioContext = ref(null);
-const mediaRecorder = ref(null);
-const recordedChunks = ref([]);
+        // === Computed Properties ===
+        const currentQuestion = computed(() => {
+            if (questions.value.length === 0) {
+                return { text: 'Loading...', options: [] };
+            }
+            return questions.value[currentQuestionIndex.value] || { text: 'No more questions', options: [] };
+        });
 
-const selectedQuizId = ref(null);
-const currentQuestionIndex = ref(0);
-const selectedOption = ref('');
-const timeRemaining = ref(30);
-const timer = ref(null);
-const quizStarted = ref(false);
-const isRecording = ref(false);
+        // === Lifecycle Hooks ===
+        onMounted(() => {
+            // Load sample questions
+            questions.value = [
+                {
+                    text: "Which philosopher would start with a tabula rasa and then develop ethical standards?",
+                    options: ["John Locke", "David Geffen", "John Rawls", "Peter Drucker"],
+                    correct: "John Locke",
+                },
+                {
+                    text: "Who wrote the book 'Republic'?",
+                    options: ["Plato", "Aristotle", "Socrates", "Descartes"],
+                    correct: "Plato",
+                },
+                {
+                    text: "Which philosopher is known for the categorical imperative?",
+                    options: ["Immanuel Kant", "David Hume", "Nietzsche", "Bertrand Russell"],
+                    correct: "Immanuel Kant",
+                },
+                // Add more test questions here
+            ];
+        });
 
-const quizzes = computed(() => store.state.quizzes);
-const selectedQuiz = computed(() => store.state.selectedQuiz);
-const questions = computed(() => selectedQuiz.value?.questions || []);
-const totalQuestions = computed(() => questions.value.length);
-const currentQuestion = computed(() => questions.value[currentQuestionIndex.value] || null);
+        onBeforeUnmount(() => {
+            // Automatically finish quiz and stop recording when component is unmounted
+            if (started.value && !finished.value) {
+                finishQuiz(true);
+                stopRecording();
+            }
+        });
 
-// Start recording function
-const startRecording = async () => {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        if (camera.value) camera.value.srcObject = stream;
-
-        streamRef.value = stream;
-        isRecording.value = true;
-        startMicrophoneFrequency(stream);
-
-        mediaRecorder.value = new MediaRecorder(stream);
-        mediaRecorder.value.ondataavailable = (event) => {
-            if (event.data.size > 0) recordedChunks.value.push(event.data);
+        // === Quiz Methods ===
+        const startQuizAndRecording = async () => {
+            started.value = true;
+            startTimers();
+            await startRecording(); // Start recording when quiz starts
         };
-        mediaRecorder.value.onstop = saveVideoToLocal;
 
-        mediaRecorder.value.start();
-    } catch (err) {
-        console.error("Error accessing camera or microphone: ", err);
-    }
+        const startTimers = () => {
+            // Main Quiz Timer
+            quizTimer = setInterval(() => {
+                quizTime.value++;
+            }, 1000);
+
+            // Start the first question timer
+            startQuestionTimer();
+        };
+
+        const startQuestionTimer = () => {
+            remainingTime.value = 30;
+            questionTimer = setInterval(() => {
+                remainingTime.value--;
+                if (remainingTime.value === 0) {
+                    nextQuestion();
+                }
+            }, 1000);
+        };
+
+        const nextQuestion = () => {
+            // Check if the selected option is correct
+            if (selectedOption.value === currentQuestion.value.correct) {
+                correctAnswers.value++;
+            }
+            if (selectedOption.value) attemptedQuestions.value++;
+            selectedOption.value = null;
+            clearInterval(questionTimer);
+
+            if (currentQuestionIndex.value < questions.value.length - 1) {
+                currentQuestionIndex.value++;
+                startQuestionTimer();
+            } else {
+                finishQuiz(true);
+            }
+        };
+
+        const confirmSkip = () => {
+            if (!selectedOption.value) {
+                showSkipConfirmation.value = true;
+            } else {
+                nextQuestion();
+            }
+        };
+
+        const skipQuestion = (confirmed) => {
+            showSkipConfirmation.value = false;
+            if (confirmed) {
+                nextQuestion();
+            }
+        };
+
+        const confirmFinish = () => {
+            showFinishConfirmation.value = true;
+        };
+
+        const finishQuiz = (confirmed) => {
+            showFinishConfirmation.value = false;
+            if (confirmed) {
+                clearInterval(quizTimer);
+                clearInterval(questionTimer);
+                finished.value = true;
+                stopRecording(); // Stop recording when quiz finishes
+            }
+        };
+
+        const formatTime = (seconds) => {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+        };
+
+        const getOptionLabel = (index) => {
+            const labels = ['A', 'B', 'C', 'D'];
+            return labels[index] || '';
+        };
+
+        // === Camera and Recording Methods ===
+        const startRecording = async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                if (camera.value) camera.value.srcObject = stream;
+
+                streamRef.value = stream;
+                isRecording.value = true;
+
+                mediaRecorder.value = new MediaRecorder(stream);
+                mediaRecorder.value.ondataavailable = (event) => {
+                    if (event.data.size > 0) recordedChunks.value.push(event.data);
+                };
+                mediaRecorder.value.onstop = saveVideoToLocal;
+
+                mediaRecorder.value.start();
+            } catch (err) {
+                console.error("Error accessing camera or microphone: ", err);
+            }
+        };
+
+        const stopRecording = () => {
+            if (streamRef.value) {
+                streamRef.value.getTracks().forEach((track) => track.stop());
+                streamRef.value = null;
+                console.log("Camera and microphone stopped.");
+            }
+
+            if (mediaRecorder.value && mediaRecorder.value.state !== "inactive") {
+                mediaRecorder.value.stop();
+            }
+
+            isRecording.value = false;
+        };
+
+        const saveVideoToLocal = () => {
+            const blob = new Blob(recordedChunks.value, { type: 'video/webm' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'recording.webm';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            recordedChunks.value = [];
+        };
+        const goBack = () => {
+            router.replace("/dashboard");
+        };
+
+        // Automatically save recording when the document is not visible
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'hidden' && isRecording.value) {
+                stopRecording();
+                saveVideoToLocal();
+            }
+        };
+
+        // Add event listener for visibility change to handle tab/browser switches
+        onMounted(() => {
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+        });
+
+        // Remove event listener on unmount
+        onBeforeUnmount(() => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        });
+
+        return {
+            // === Quiz Data and Methods ===
+            started,
+            finished,
+            currentQuestion,
+            currentQuestionIndex,
+            selectedOption,
+            remainingTime,
+            quizTime,
+            correctAnswers,
+            attemptedQuestions,
+            showSkipConfirmation,
+            showFinishConfirmation,
+            startQuizAndRecording,
+            confirmSkip,
+            skipQuestion,
+            confirmFinish,
+            finishQuiz,
+            formatTime,
+            getOptionLabel,
+            questions,
+            goBack,
+            // === Camera and Recording Data and Methods ===
+            camera,
+            isRecording,
+        };
+    },
 };
-
-// Start analyzing microphone frequency
-const startMicrophoneFrequency = (stream) => {
-    audioContext.value = new (window.AudioContext || window.webkitAudioContext)();
-    const source = audioContext.value.createMediaStreamSource(stream);
-    const analyser = audioContext.value.createAnalyser();
-    source.connect(analyser);
-    analyser.fftSize = 2048;
-
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
-    const drawFrequency = () => {
-        if (!frequencyCanvas.value) return console.error('Canvas not ready for drawing.');
-
-        requestAnimationFrame(drawFrequency);
-        const canvasContext = frequencyCanvas.value.getContext('2d');
-        analyser.getByteTimeDomainData(dataArray);
-        canvasContext.clearRect(0, 0, frequencyCanvas.value.width, frequencyCanvas.value.height);
-
-        // Drawing logic remains unchanged
-        // ...
-    };
-
-    drawFrequency();
-};
-
-// Stop recording function
-const stopRecording = () => {
-    if (streamRef.value) {
-        streamRef.value.getTracks().forEach((track) => track.stop());
-        streamRef.value = null;
-        console.log("Camera and microphone stopped.");
-    }
-
-    if (mediaRecorder.value && mediaRecorder.value.state !== "inactive") {
-        mediaRecorder.value.stop();
-    }
-
-    if (audioContext.value) {
-        audioContext.value.close().catch(err => console.error("Error closing AudioContext:", err));
-    }
-
-    isRecording.value = false;
-};
-
-// Save recorded video to local
-const saveVideoToLocal = () => {
-    const blob = new Blob(recordedChunks.value, { type: 'video/webm' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = 'recording.webm';
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    recordedChunks.value = [];
-};
-
-// Load selected quiz
-const loadSelectedQuiz = () => {
-    store.dispatch('selectQuiz', selectedQuizId.value);
-    resetTimer();
-};
-
-// Start the quiz
-const startQuiz = () => {
-    startRecording();
-    quizStarted.value = true;
-    resetTimer();
-};
-
-// Submit answer and move to next question
-const submitAnswer = () => {
-    if (currentQuestionIndex.value < totalQuestions.value - 1) {
-        moveToNextQuestion();
-    } else {
-        finishQuiz();
-    }
-};
-
-// Move to the next question or finish the quiz
-const moveToNextQuestion = () => {
-    clearInterval(timer.value);
-    if (currentQuestionIndex.value < totalQuestions.value - 1) {
-        currentQuestionIndex.value++;
-        resetTimer();
-    } else {
-        finishQuiz(); // Automatically finish if on the last question
-    }
-};
-
-// Reset the timer
-const resetTimer = () => {
-    clearInterval(timer.value);
-    timeRemaining.value = 30;
-    timer.value = setInterval(() => {
-        timeRemaining.value--;
-        if (timeRemaining.value === 0) submitAnswer();
-    }, 1000);
-};
-
-// Finish the quiz
-const finishQuiz = () => {
-    if (currentQuestionIndex.value < totalQuestions.value - 1) {
-        const confirmFinish = confirm('You still have questions left. Are you sure you want to finish the quiz?');
-        if (!confirmFinish) return;
-    }
-    clearInterval(timer.value);
-    quizStarted.value = false;
-    stopRecording();
-    alert('Quiz finished!');
-};
-
-// Cleanup on component unmount
-onUnmounted(() => {
-    if (isRecording.value) stopRecording();
-    clearInterval(timer.value);
-});
-
-// Fetch quizzes on mount
-onMounted(async () => {
-    await store.dispatch('fetchQuizzes');
-});
-
-// Clean up timer on component unmount
-onBeforeUnmount(() => {
-    clearInterval(timer.value);
-});
-
-// Stop recording on route change
-router.beforeEach((to, from, next) => {
-    stopRecording();
-    next();
-});
 </script>
 
 <style scoped>
-.card-header {
-    background-color: #007bff;
-    color: #fff;
+.combined-container {
+    /* Container for the combined quiz and camera components */
+    max-width: 1000px;
+    margin: auto;
+    padding: 20px;
 }
 
-.form-check-input {
-    margin-top: 0.3rem;
-    margin-right: 0.5rem;
+.start-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    /* Center vertically */
 }
+
+.instruction-card {
+    border: 1px solid #007bff;
+    /* Bootstrap primary color */
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 400px;
+    /* Limit the card width */
+    text-align: center;
+    background-color: #f8f9fa;
+    /* Light background for contrast */
+}
+
+.instruction-card h3 {
+    margin-bottom: 15px;
+}
+
+.instruction-card p {
+    margin-bottom: 10px;
+}
+
+.instruction-card ul {
+    text-align: left;
+    /* Align list to the left */
+    margin-bottom: 15px;
+}
+
+
+
+.quiz-creation-section {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.questions-section {
+    margin-top: 20px;
+}
+
+.card {
+    background-color: #ffffff;
+}
+
+.options-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.option-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    /* Ensures all rows take the full width */
+    margin-bottom: 10px;
+    /* Spacing between options */
+}
+
+.option-label {
+    flex-grow: 1;
+    /* Allows the label to take available space */
+    text-align: left;
+    /* Align text to the left */
+    padding: 10px;
+    /* Add padding for a better appearance */
+    display: block;
+    /* Ensure the label behaves as a block element */
+}
+
+.quiz-buttons {
+    margin-top: 10px;
+}
+
+.confirmation-modal {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px;
+    border: 1px solid #ccc;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.result-container {
+    text-align: center;
+}
+
+/* .camera-section {
+    /* Styles for the camera and recording section */
+/* display: flex;
+    flex-direction: column;
+    align-items: center; 
+} */
 
 .camera-box {
-    width: 100%;
+    width: 400px;
     height: 400px;
     border: 2px solid #007bff;
     border-radius: 10px;
     background-color: #f8f9fa;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-canvas {
+video {
     width: 100%;
-    height: 100px;
-    background-color: #f8f9fa;
-    border: 2px solid #007bff;
-    border-radius: 10px;
+    height: 100%;
+    object-fit: cover;
+    /* Ensures the video covers the box without distortion */
+}
+
+.btn {
+    margin-top: 20px;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.btn-outline-info {
+    border-color: #17a2b8;
+    color: #17a2b8;
+}
+
+.btn-outline-info:hover {
+    background-color: #17a2b8;
+    color: #fff;
 }
 </style>
