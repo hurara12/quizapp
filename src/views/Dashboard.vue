@@ -1,24 +1,10 @@
 <template>
   <div class="main-wrap">
     <div class="container mt-5">
-      <div class="d-flex align-items-center justify-content-between p-4">
-        <!-- Centered Dashboard Title -->
-        <div class="d-flex justify-content-center flex-grow-1">
-          <h1 class="mx-4 my-2">Dashboard</h1>
-        </div>
-
-        <!-- Logout Button aligned to the right -->
-        <div class="d-flex justify-content-end ms-auto">
-          <transition name="fade">
-            <button @click="logout" class="px-4 btn logout-btn" v-if="!isLoggingOut">
-              <font-awesome-icon icon="right-from-bracket" class="fa-2xl" style="color: #233453;"></font-awesome-icon>
-            </button>
-          </transition>
-        </div>
-      </div>
+      <Header title="Dashboard" />
 
       <div class="row mt-4">
-        <div class="col-md-4 mb-4" v-for="(button, index) in buttons" :key="index">
+        <div class="col-lg-4 col-md-6 col-12 mb-4" v-for="(button, index) in buttons" :key="index">
           <transition name="fade">
             <div class="card text-center h-100" @click="handleCardClick(index)">
               <div class="card-body">
@@ -39,9 +25,13 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
+import Header from '@/components/HeaderAndLogout.vue'; // 
 
 export default {
   name: "DashboardView",
+  components: {
+    Header,
+  },
   setup() {
     const buttons = ref([
       { title: "Manager Roles", description: "View and Edit Manager requests.", link: "/managerroles" },
@@ -49,8 +39,7 @@ export default {
       { title: "View Results", description: "Check quiz results.", link: "/viewresult" },
       { title: "Quiz", description: "Create and Manage Quiz", link: "/createquiz" },
       { title: "Update Profile", description: "Update your Password", link: "/updatepassword" },
-      { title: "Attempt Quiz", description: "View and attempt Quizes", link: "/quizcomponent" },
-      { title: "Quiz temp", description: "AA", link: "/viewandselectquiz" },
+      { title: "Attempt Quiz", description: "View and attempt Quizes", link: "/viewandselectquiz" },
     ]);
 
     const router = useRouter();
@@ -81,17 +70,18 @@ export default {
 
 <style scoped>
 .main-wrap {
-  background-color: rgba(255, 255, 255, 1);
+  background-color: #fbe9d0;
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding-top: 60px;
 }
 
 .card {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  background-color: rgba(255, 255, 255, 1);
+  background-color: #77b1ad;
   box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 

@@ -1,69 +1,76 @@
 <template>
-    <div class="container mt-5">
-        <div class="row">
-            <!-- Left Form -->
-            <div class="col-md-4">
-                <h3>{{ isEditing ? 'Edit Role' : 'Add Role' }}</h3>
-                <form @submit.prevent="isEditing ? updateRole() : addRole()">
-                    <!-- Name Field -->
-                    <div class="form-floating mb-3">
-                        <input v-model="formData.name" type="text" class="form-control" id="name"
-                            placeholder="Enter Name" required />
-                        <label for="name">Name</label>
+    <div class="main-wrap">
+        <div class="container mt-5">
+            <Header title="Add and Manage Role" />
+            <div class="row g-5">
+                <!-- Left Form -->
+                <div class="col-md-4">
+                    <div class="role-section overflow-height">
+                        <h3 class="text-center text-muted">{{ isEditing ? 'Edit Role' : 'Add Role' }}</h3>
+                        <form @submit.prevent="isEditing ? updateRole() : addRole()">
+                            <!-- Name Field -->
+                            <div class="form-floating mb-3">
+                                <input v-model="formData.name" type="text" class="form-control" id="name"
+                                    placeholder="Enter Name" required />
+                                <label for="name">Name</label>
+                            </div>
+
+                            <!-- Email Field -->
+                            <div class="form-floating mb-3">
+                                <input v-model="formData.email" type="email" class="form-control" id="email"
+                                    placeholder="Enter Email" required />
+                                <label for="email">Email</label>
+                            </div>
+
+                            <!-- Role Field -->
+                            <div class="form-floating mb-3">
+                                <select v-model="formData.role" id="role" class="form-select" required>
+                                    <option value="manager">Manager</option>
+                                    <option value="supervisor">Supervisor</option>
+                                </select>
+                                <label for="role">Role</label>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-primary w-100">
+                                {{ isEditing ? 'Update Role' : 'Add Role' }}
+                            </button>
+                        </form>
                     </div>
+                </div>
 
-                    <!-- Email Field -->
-                    <div class="form-floating mb-3">
-                        <input v-model="formData.email" type="email" class="form-control" id="email"
-                            placeholder="Enter Email" required />
-                        <label for="email">Email</label>
+                <!-- Right Table -->
+                <div class="col-md-8">
+                    <div class="role-section overflow-height">
+                        <h3>Roles</h3>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(user, index) in users" :key="index">
+                                        <td>{{ user.name }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>{{ user.role }}</td>
+                                        <td>
+                                            <button class="btn btn-warning btn-sm me-2" @click="editRole(index)">
+                                                Edit
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" @click="deleteRole(index)">
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-
-                    <!-- Role Field -->
-                    <div class="form-floating mb-3">
-                        <select v-model="formData.role" id="role" class="form-select" required>
-                            <option value="manager">Manager</option>
-                            <option value="supervisor">Supervisor</option>
-                        </select>
-                        <label for="role">Role</label>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit" class="btn btn-primary w-100">
-                        {{ isEditing ? 'Update Role' : 'Add Role' }}
-                    </button>
-                </form>
-            </div>
-
-            <!-- Right Table -->
-            <div class="col-md-8">
-                <h3>Roles</h3>
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(user, index) in users" :key="index">
-                                <td>{{ user.name }}</td>
-                                <td>{{ user.email }}</td>
-                                <td>{{ user.role }}</td>
-                                <td>
-                                    <button class="btn btn-warning btn-sm me-2" @click="editRole(index)">
-                                        Edit
-                                    </button>
-                                    <button class="btn btn-danger btn-sm" @click="deleteRole(index)">
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
@@ -74,6 +81,7 @@
 import { reactive, ref, onMounted } from 'vue';
 import axios from 'axios'; // This will help later for API
 import { useStore } from 'vuex';
+import Header from '@/components/HeaderAndLogout.vue'; // 
 
 const store = useStore();
 // Form data object
@@ -142,6 +150,28 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.main-wrap {
+    background-color: #fbe9d0;
+    width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 60px;
+}
+
+.role-section {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.overflow-height {
+    overflow: auto;
+    height: 450px;
+}
+
 h3 {
     margin-bottom: 20px;
 }

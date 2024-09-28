@@ -1,57 +1,60 @@
 <template>
-    <div class="container mt-4">
-        <!-- Search and View Mode -->
-        <div class="d-flex justify-content-between mb-3">
-            <input type="text" class="form-control w-50" placeholder="Search..." v-model="searchQuery" />
-            <div>
-                <label for="view" class="me-2">View As:</label>
-                <select id="view" v-model="viewMode" class="form-select d-inline w-auto">
-                    <option value="student">View by Student</option>
-                    <option value="quiz">View by Quiz</option>
-                </select>
+    <div class="main-wrap">
+        <div class="container mt-4">
+            <Header title="View Result" />
+            <!-- Search and View Mode -->
+            <div class="d-flex justify-content-between mb-3">
+                <input type="text" class="form-control w-50" placeholder="Search..." v-model="searchQuery" />
+                <div>
+                    <label for="view" class="me-2">View As:</label>
+                    <select id="view" v-model="viewMode" class="form-select d-inline w-auto">
+                        <option value="student">View by Student</option>
+                        <option value="quiz">View by Quiz</option>
+                    </select>
+                </div>
             </div>
-        </div>
 
-        <!-- Cards -->
-        <div class="row">
-            <transition-group name="fade-slide" tag="div" class="d-flex flex-wrap">
-                <div v-for="(item, index) in paginatedData" :key="index" class="col-12 col-md-6 col-lg-4 p-4">
-                    <div class="card custom-card user-card p-3" :style="{ height: '500px' }">
-                        <div class="card-body text-start">
-                            <template v-if="viewMode === 'student'">
-                                <h5 class="card-subtitle mb-2 text-muted text-center">Student Information</h5>
-                                <p class="card-text"><strong>Name: </strong>{{ item.name }}</p>
-                                <p class="card-text"><strong>Email: </strong>{{ item.email }}</p>
-                                <p>Attempted Quizzes:</p>
-                                <ul class="list-unstyled">
-                                    <li v-for="(quiz, idx) in item.quizzes.slice(0, 7)" :key="idx">
-                                        <strong>{{ quiz.name }}</strong> - {{ quiz.marks }} marks
-                                    </li>
-                                </ul>
-                                <button @click="viewsolo" class="btn btn-outline-primary w-100">Click for More
-                                    Details</button>
-                            </template>
-                            <template v-else>
-                                <h6 class="card-title">{{ item.quizName }}</h6>
-                                <p>Attempted Students:</p>
-                                <div style="max-height: 200px; overflow-y: auto;">
+            <!-- Cards -->
+            <div class="row">
+                <transition-group name="fade-slide" tag="div" class="d-flex flex-wrap">
+                    <div v-for="(item, index) in paginatedData" :key="index" class="col-12 col-md-6 col-lg-4 p-4">
+                        <div class="card custom-card user-card p-3" :style="{ height: '500px' }">
+                            <div class="card-body text-start">
+                                <template v-if="viewMode === 'student'">
+                                    <h5 class="card-subtitle mb-2 text-muted text-center">Student Information</h5>
+                                    <p class="card-text"><strong>Name: </strong>{{ item.name }}</p>
+                                    <p class="card-text"><strong>Email: </strong>{{ item.email }}</p>
+                                    <p>Attempted Quizzes:</p>
                                     <ul class="list-unstyled">
-                                        <li v-for="(student, idx) in item.students.slice(0, 8)" :key="idx">
-                                            {{ student.name }}: {{ student.marks }}/100
+                                        <li v-for="(quiz, idx) in item.quizzes.slice(0, 7)" :key="idx">
+                                            <strong>{{ quiz.name }}</strong> - {{ quiz.marks }} marks
                                         </li>
                                     </ul>
-                                </div>
-                                <button @click="viewsolo" class="btn btn-outline-primary w-100">Click for More
-                                    Details</button>
-                            </template>
+                                    <button @click="viewsolo" class="btn btn-outline-primary w-100">Click for More
+                                        Details</button>
+                                </template>
+                                <template v-else>
+                                    <h6 class="card-title">{{ item.quizName }}</h6>
+                                    <p>Attempted Students:</p>
+                                    <div style="max-height: 200px; overflow-y: auto;">
+                                        <ul class="list-unstyled">
+                                            <li v-for="(student, idx) in item.students.slice(0, 8)" :key="idx">
+                                                {{ student.name }}: {{ student.marks }}/100
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <button @click="viewsolo" class="btn btn-outline-primary w-100">Click for More
+                                        Details</button>
+                                </template>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </transition-group>
-        </div>
+                </transition-group>
+            </div>
 
-        <!-- Pagination Component -->
-        <pagination-component :currentPage="currentPage" :totalPages="totalPages" @updatePage="goToPage" />
+            <!-- Pagination Component -->
+            <pagination-component :currentPage="currentPage" :totalPages="totalPages" @updatePage="goToPage" />
+        </div>
     </div>
 </template>
 
@@ -59,10 +62,12 @@
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import PaginationComponent from "./Pagination.vue";
+import Header from '@/components/HeaderAndLogout.vue'; // 
 
 export default {
     components: {
         PaginationComponent,
+        Header
     },
     setup() {
         const searchQuery = ref("");
@@ -227,6 +232,16 @@ export default {
 </script>
 
 <style scoped>
+.main-wrap {
+    background-color: #fbe9d0;
+    width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 90px;
+}
+
 p {
     padding: 3px;
     margin: 0;

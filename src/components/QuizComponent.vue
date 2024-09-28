@@ -1,106 +1,110 @@
 <template>
-    <div class="combined-container">
+    <div class="main-wrap">
+        <Header :title="`Quiz: ${quizName}`" />
+        <div class="combined-container">
 
-        <!-- I Agree Screen -->
-        <div v-if="!started" class="start-container">
-            <div class="instruction-card">
-                <h3>Quiz Instructions</h3>
-                <p>Please read the following instructions carefully:</p>
-                <ul>
-                    <li>Each question has 4-choice answers.</li>
-                    <li>Select the option that best answers the question.</li>
-                    <li>You cannot change your answer once selected.</li>
-                    <li>Time for each question is 30 seconds</li>
-                    <li>Each Question is of 1 mark</li>
-                    <li>Good luck!</li>
-                </ul>
-                <button class="btn btn-outline-danger" @click="startQuizAndRecording">I Agree</button>
+            <!-- I Agree Screen -->
+            <div v-if="!started" class="start-container">
+                <div class="instruction-card">
+                    <h3>Quiz Instructions</h3>
+                    <p>Please read the following instructions carefully:</p>
+                    <ul>
+                        <li>Each question has 4-choice answers.</li>
+                        <li>Select the option that best answers the question.</li>
+                        <li>You cannot change your answer once selected.</li>
+                        <li>Time for each question is 30 seconds</li>
+                        <li>Each Question is of 1 mark</li>
+                        <li>Good luck!</li>
+                    </ul>
+                    <button class="btn btn-outline-danger" @click="startQuizAndRecording">I Agree</button>
+                </div>
             </div>
-        </div>
 
-        <!-- Main Content: Quiz and Camera -->
-        <div v-else class="main-content">
-            <!-- Quiz Section -->
-            <div class="row">
-                <div class="col-lg">
-                    <div class="quiz-creation-section border p-3"
-                        v-if="questions && questions.length > 0 && finished == false">
-                        <p>Total Questions: {{ questions.length }}</p>
-                        <p>Current Question: {{ currentQuestionIndex + 1 }} / {{ questions.length }}</p>
-                        <p>Time for Quiz: <span class="text-warning">{{ formatTime(quizTime) }}</span></p>
-                        <p>Remaining Time for this Question: <span class="text-danger">{{ remainingTime }}
-                                Seconds</span></p>
+            <!-- Main Content: Quiz and Camera -->
+            <div v-else class="main-content">
+                <!-- Quiz Section -->
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="quiz-section border p-3"
+                            v-if="questions && questions.length > 0 && finished == false">
+                            <p>Total Questions: {{ questions.length }}</p>
+                            <p>Current Question: {{ currentQuestionIndex + 1 }} / {{ questions.length }}</p>
+                            <p>Time for Quiz: <span class="text-warning">{{ formatTime(quizTime) }}</span></p>
+                            <p>Remaining Time for this Question: <span class="text-danger">{{ remainingTime }}
+                                    Seconds</span></p>
 
-                        <!--c Qusestion and Options  -->
-                        <div class="questions-section">
-                            <div class="card mb-4 p-3">
-                                <h5 class="text-start">{{ currentQuestionIndex + 1 + ". " + currentQuestion.text }}</h5>
-                                <div class="options-container">
-                                    <div v-for="(option, index) in currentQuestion.options" :key="index"
-                                        class="option-row text-start">
-                                        <input type="radio" :id="'option' + index" class="btn-check"
-                                            v-model="selectedOption" :value="option" name="quiz-options" />
-                                        <label class="btn btn-outline-info option-label" :for="'option' + index">
-                                            {{ getOptionLabel(index) }}. {{ option }}
-                                        </label>
+                            <!--c Qusestion and Options  -->
+                            <div class="questions-section">
+                                <div class="card mb-2 p-2">
+                                    <h5 class="text-start">{{ currentQuestionIndex + 1 + ". " + currentQuestion.text }}
+                                    </h5>
+                                    <div class="options-container">
+                                        <div v-for="(option, index) in currentQuestion.options" :key="index"
+                                            class="option-row text-start">
+                                            <input type="radio" :id="'option' + index" class="btn-check"
+                                                v-model="selectedOption" :value="option" name="quiz-options" />
+                                            <label class="btn btn-outline-info option-label" :for="'option' + index">
+                                                {{ getOptionLabel(index) }}. {{ option }}
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Quiz Buttons -->
+                            <div class="quiz-buttons d-flex justify-content-end">
+                                <!-- Check if the current question is the last one -->
+                                <button v-if="currentQuestionIndex < questions.length - 1"
+                                    class="btn btn-secondary me-3" @click="confirmSkip">
+                                    Next
+                                </button>
+
+                                <button v-else class="btn btn-primary me-3" @click="confirmSkip">
+                                    Submit
+                                </button>
+                                <!-- Hide "Finish Quiz" button if on the last question -->
+                                <button v-if="currentQuestionIndex < questions.length - 1" class="btn btn-danger"
+                                    @click="confirmFinish">
+                                    Finish Quiz
+                                </button>
+                            </div>
+
+                        </div>
+                        <div v-else-if="!finished">
+                            Loading questions...
                         </div>
 
-                        <!-- Quiz Buttons -->
-                        <div class="quiz-buttons d-flex justify-content-end">
-                            <!-- Check if the current question is the last one -->
-                            <button v-if="currentQuestionIndex < questions.length - 1" class="btn btn-secondary me-3"
-                                @click="confirmSkip">
-                                Next
-                            </button>
 
-                            <button v-else class="btn btn-primary me-3" @click="confirmSkip">
-                                Submit
-                            </button>
-                            <!-- Hide "Finish Quiz" button if on the last question -->
-                            <button v-if="currentQuestionIndex < questions.length - 1" class="btn btn-danger"
-                                @click="confirmFinish">
-                                Finish Quiz
-                            </button>
+                        <!-- Skip Confirmation Modal -->
+                        <div v-if="showSkipConfirmation" class="confirmation-modal">
+                            <p>Are you sure you want to skip this question?</p>
+                            <button class="btn btn-warning me-3" @click="skipQuestion(true)">Yes</button>
+                            <button class="btn btn-secondary" @click="skipQuestion(false)">No</button>
                         </div>
 
-                    </div>
-                    <div v-else-if="!finished">
-                        Loading questions...
-                    </div>
-
-
-                    <!-- Skip Confirmation Modal -->
-                    <div v-if="showSkipConfirmation" class="confirmation-modal">
-                        <p>Are you sure you want to skip this question?</p>
-                        <button class="btn btn-warning me-3" @click="skipQuestion(true)">Yes</button>
-                        <button class="btn btn-secondary" @click="skipQuestion(false)">No</button>
+                        <!-- Finish Confirmation Modal -->
+                        <div v-if="showFinishConfirmation" class="confirmation-modal">
+                            <p>You have remaining questions, are you sure you want to finish the quiz?</p>
+                            <button class="btn btn-danger me-3" @click="finishQuiz(true)">Yes</button>
+                            <button class="btn btn-secondary" @click="finishQuiz(false)">No</button>
+                        </div>
                     </div>
 
-                    <!-- Finish Confirmation Modal -->
-                    <div v-if="showFinishConfirmation" class="confirmation-modal">
-                        <p>You have remaining questions, are you sure you want to finish the quiz?</p>
-                        <button class="btn btn-danger me-3" @click="finishQuiz(true)">Yes</button>
-                        <button class="btn btn-secondary" @click="finishQuiz(false)">No</button>
+                    <!-- Camera and Microphone Section -->
+                    <div v-if="!finished" class="camera-section mt-4 col-lg-4">
+                        <div class="camera-box">
+                            <video ref="camera" autoplay playsinline class="w-100"></video>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Camera and Microphone Section -->
-                <div v-if="!finished" class="camera-section mt-4 col-lg-4">
-                    <div class="camera-box">
-                        <video ref="camera" autoplay playsinline class="w-100"></video>
-                    </div>
+                <!-- Results Section -->
+                <div v-if="finished" class="result-container">
+                    <h3>Quiz Finished</h3>
+                    <p>Marks: {{ correctAnswers }} / {{ questions.length }}</p>
+                    <p>Attempted Questions: {{ attemptedQuestions }}</p>
+                    <p>Correct Questions: {{ correctAnswers }}</p>
+                    <button class="btn btn-secondary" @click="goBack">Go Back</button>
                 </div>
-            </div>
-            <!-- Results Section -->
-            <div v-if="finished" class="result-container">
-                <h3>Quiz Finished</h3>
-                <p>Marks: {{ correctAnswers }} / {{ questions.length }}</p>
-                <p>Attempted Questions: {{ attemptedQuestions }}</p>
-                <p>Correct Questions: {{ correctAnswers }}</p>
-                <button class="btn btn-secondary" @click="goBack">Go Back</button>
             </div>
         </div>
     </div>
@@ -109,8 +113,12 @@
 <script>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter, useRoute } from "vue-router";
+import Header from '@/components/HeaderAndLogout.vue'; // 
 export default {
     name: 'CombinedQuizAndRecording',
+    components: {
+        Header,
+    },
     setup() {
         // === Quiz State Variables ===
         const router = useRouter();
@@ -125,6 +133,7 @@ export default {
         const attemptedQuestions = ref(0);
         const showSkipConfirmation = ref(false);
         const showFinishConfirmation = ref(false);
+        let quizName = ref('');
         let questionTimer = null;
         let quizTimer = null;
 
@@ -146,6 +155,7 @@ export default {
         // === Lifecycle Hooks ===
         onMounted(() => {
             // Load sample questions
+            quizName.value = "History"
             questions.value = [
                 {
                     text: "Which philosopher would start with a tabula rasa and then develop ethical standards?",
@@ -178,7 +188,7 @@ export default {
         const startQuizAndRecording = async () => {
             started.value = true;
             startTimers();
-            await startRecording(); // Start recording when quiz starts
+            //await startRecording(); // Start recording when quiz starts
         };
 
         const startTimers = () => {
@@ -306,7 +316,7 @@ export default {
             recordedChunks.value = [];
         };
         const goBack = () => {
-            router.replace("/dashboard");
+            router.replace("/viewandselectquiz");
         };
 
         // Automatically save recording when the document is not visible
@@ -352,24 +362,43 @@ export default {
             // === Camera and Recording Data and Methods ===
             camera,
             isRecording,
+            quizName,
         };
     },
 };
 </script>
 
 <style scoped>
+p {
+    padding: 4px;
+    margin: 5px;
+}
+
+.main-wrap {
+    background-color: #fbe9d0;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    /* Changed from center to flex-start */
+    justify-content: center;
+    padding-top: 90px;
+}
+
 .combined-container {
     /* Container for the combined quiz and camera components */
-    max-width: 1000px;
+    width: 1100px;
+    max-width: 100%;
+    /* Ensures the container doesn't exceed the screen width */
     margin: auto;
-    padding: 20px;
+    padding: 25px;
 }
 
 .start-container {
     display: flex;
+    align-items: flex-start;
+    /* Changed from center to flex-start */
     justify-content: center;
-    align-items: center;
-    height: 100vh;
     /* Center vertically */
 }
 
@@ -401,15 +430,15 @@ export default {
 
 
 
-.quiz-creation-section {
+.quiz-section {
     border: 1px solid #ddd;
-    padding: 15px;
+    padding: 10px;
     border-radius: 8px;
     background-color: #f9f9f9;
 }
 
 .questions-section {
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .card {
@@ -426,7 +455,7 @@ export default {
     align-items: center;
     width: 100%;
     /* Ensures all rows take the full width */
-    margin-bottom: 10px;
+    margin-bottom: 0px;
     /* Spacing between options */
 }
 
@@ -461,17 +490,11 @@ export default {
     text-align: center;
 }
 
-/* .camera-section {
-    /* Styles for the camera and recording section */
-/* display: flex;
-    flex-direction: column;
-    align-items: center; 
-} */
 
 .camera-box {
-    width: 400px;
-    height: 400px;
-    border: 2px solid #007bff;
+    width: 500px;
+    height: 500px;
+    border: 2px solid #eeb4b4;
     border-radius: 10px;
     background-color: #f8f9fa;
     overflow: hidden;
@@ -491,33 +514,94 @@ video {
     margin-top: 20px;
 }
 
-.btn-success {
-    background-color: #28a745;
-    border-color: #28a745;
+/* Media query for large screens (above 1384px) */
+@media (min-width: 1384px) {
+    .combined-container {
+        width: 100%;
+        max-width: 1384px;
+        padding: 20px;
+    }
+
+    .camera-box {
+        width: 400px;
+        height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
-.btn-danger {
-    background-color: #dc3545;
-    border-color: #dc3545;
+/* Media query for screens between 1024px and 1384px */
+@media (max-width: 1384px) and (min-width: 1024px) {
+    .combined-container {
+        width: 100%;
+        max-width: 1024px;
+        padding: 15px;
+    }
+
+    .camera-box {
+        width: 300px;
+        height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
-.btn-outline-danger {
-    border-color: #dc3545;
-    color: #dc3545;
+/* Media query for screens between 768px and 1024px (tablet size) */
+@media (max-width: 1024px) and (min-width: 768px) {
+    .combined-container {
+        width: 100%;
+        max-width: 768px;
+        padding: 15px;
+    }
+
+    .camera-box {
+        width: 400px;
+        height: 400px;
+        margin: 0 auto;
+        /* Centers the camera on medium screens */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
-.btn-outline-danger:hover {
-    background-color: #dc3545;
-    color: #fff;
+/* Media query for screens between 480px and 768px (small tablets and larger mobile devices) */
+@media (max-width: 768px) and (min-width: 480px) {
+    .combined-container {
+        width: 100%;
+        max-width: 768px;
+        padding: 10px;
+    }
+
+    .camera-box {
+        width: 400px;
+        height: 400px;
+        margin: 0 auto;
+        /* Centers the camera */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
-.btn-outline-info {
-    border-color: #17a2b8;
-    color: #17a2b8;
-}
+/* Media query for screens less than or equal to 480px (mobile size) */
+@media (max-width: 480px) {
+    .combined-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 5px;
+    }
 
-.btn-outline-info:hover {
-    background-color: #17a2b8;
-    color: #fff;
+    .camera-box {
+        width: 300px;
+        height: 300px;
+        margin: 0 auto;
+        /* Centers the camera */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 </style>

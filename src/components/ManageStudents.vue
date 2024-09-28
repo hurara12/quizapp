@@ -1,117 +1,121 @@
 <template>
     <!-- // rejected ka time ni a raha. or rejected mn bi assign quiz dikha raha hy  -->
-    <div class="container mt-5">
-        <div class="row">
-            <!-- Left Side: Accepted and Rejected Students -->
-            <div class="col-md-8">
-                <h3>Students</h3>
+    <div class="main-wrap">
+        <div class="container mt-5">
+            <Header title="Manage Student" />
+            <div class="row">
+                <!-- Left Side: Accepted and Rejected Students -->
+                <div class="col-md-8">
+                    <h3>Students</h3>
 
-                <!-- Search Bar and Dropdown Filter -->
-                <div class="d-flex mb-3">
-                    <input type="text" v-model="searchQuery" class="form-control me-2"
-                        placeholder="Search by Name, Phone, Email, or Quizzes" />
-                    <select v-model="filterStatus" class="form-select"
-                        :class="{ 'text-success': filterStatus === 'approved', 'text-danger': filterStatus === 'rejected' }">
-                        <option value="approved" class="text-success">Accepted</option>
-                        <option value="rejected" class="text-danger">Rejected</option>
-                    </select>
+                    <!-- Search Bar and Dropdown Filter -->
+                    <div class="d-flex mb-3">
+                        <input type="text" v-model="searchQuery" class="form-control me-2"
+                            placeholder="Search by Name, Phone, Email, or Quizzes" />
+                        <select v-model="filterStatus" class="form-select"
+                            :class="{ 'text-success': filterStatus === 'approved', 'text-danger': filterStatus === 'rejected' }">
+                            <option value="approved" class="text-success">Accepted</option>
+                            <option value="rejected" class="text-danger">Rejected</option>
+                        </select>
 
-                </div>
-
-                <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>View CV</th>
-                                <th>Status</th>
-                                <th v-if="filterStatus === 'approved'">Assigned</th>
-                                <th v-if="filterStatus === 'approved'">Assign</th>
-                                <th v-if="filterStatus === 'rejected'">Rejected At</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(student, index) in filteredStudents" :key="index">
-                                <td class="firstCapital">{{ student.name }}</td>
-                                <td>{{ student.email }}</td>
-                                <td><a :href="student.cv_path" target="_blank" class="btn btn-info btn-sm">View CV</a>
-                                </td>
-                                <td class="firstCapital"
-                                    :class="{ 'text-success': filterStatus === 'approved', 'text-danger': filterStatus === 'rejected' }">
-                                    {{ student.status }}</td>
-                                <td v-if="filterStatus === 'approved'">{{ student.created_at }}</td>
-                                <td v-if="filterStatus === 'approved'">
-                                    <input type="checkbox"
-                                        :disabled="isQuizAlreadyAssigned(student) || student.status === 'rejected'"
-                                        @change="toggleQuizAssignment(student)" />
-                                </td>
-
-                                <td class="firstCapital" v-if="filterStatus === 'rejected'">{{ student.updated_at }}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Assign Quiz Div -->
-                <div v-if="showAssignDiv && filterStatus === 'approved'" class="my-4">
-                    <label for="availableQuizzes" class="form-label">Available Quizzes</label>
-                    <select v-model="selectedQuiz" id="availableQuizzes" class="form-select mb-3" required>
-                        <option value="" disabled>Select a Quiz</option> <!-- Default option -->
-                        <option v-for="quiz in availableQuizzes" :key="quiz.id" :value="quiz.title">
-                            {{ quiz.title }}
-                        </option>
-                    </select>
-
-                    <div class="mb-3">
-                        <label for="startDateTime" class="form-label">Quiz Start Date & Time</label>
-                        <input type="datetime-local" v-model="startDateTime" id="startDateTime" class="form-control"
-                            :min="minDateTime" :max="maxStartDateTime" required />
                     </div>
 
-                    <div class="mb-3">
-                        <label for="endDateTime" class="form-label">Quiz End Date & Time</label>
-                        <input type="datetime-local" v-model="endDateTime" id="endDateTime" class="form-control"
-                            :min="startDateTime || minDateTime" :max="maxEndDateTime" required />
+                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>View CV</th>
+                                    <th>Status</th>
+                                    <th v-if="filterStatus === 'approved'">Assigned</th>
+                                    <th v-if="filterStatus === 'approved'">Assign</th>
+                                    <th v-if="filterStatus === 'rejected'">Rejected At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(student, index) in filteredStudents" :key="index">
+                                    <td class="firstCapital">{{ student.name }}</td>
+                                    <td>{{ student.email }}</td>
+                                    <td><a :href="student.cv_path" target="_blank" class="btn btn-info btn-sm">View
+                                            CV</a>
+                                    </td>
+                                    <td class="firstCapital"
+                                        :class="{ 'text-success': filterStatus === 'approved', 'text-danger': filterStatus === 'rejected' }">
+                                        {{ student.status }}</td>
+                                    <td v-if="filterStatus === 'approved'">{{ student.created_at }}</td>
+                                    <td v-if="filterStatus === 'approved'">
+                                        <input type="checkbox"
+                                            :disabled="isQuizAlreadyAssigned(student) || student.status === 'rejected'"
+                                            @change="toggleQuizAssignment(student)" />
+                                    </td>
+
+                                    <td class="firstCapital" v-if="filterStatus === 'rejected'">{{ student.updated_at }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
 
-                    <button class="btn btn-primary" @click="assignQuizToStudents">Assign Quiz to Selected
-                        Students</button>
+                    <!-- Assign Quiz Div -->
+                    <div v-if="showAssignDiv && filterStatus === 'approved'" class="my-4">
+                        <label for="availableQuizzes" class="form-label">Available Quizzes</label>
+                        <select v-model="selectedQuiz" id="availableQuizzes" class="form-select mb-3" required>
+                            <option value="" disabled>Select a Quiz</option> <!-- Default option -->
+                            <option v-for="quiz in availableQuizzes" :key="quiz.id" :value="quiz.title">
+                                {{ quiz.title }}
+                            </option>
+                        </select>
+
+                        <div class="mb-3">
+                            <label for="startDateTime" class="form-label">Quiz Start Date & Time</label>
+                            <input type="datetime-local" v-model="startDateTime" id="startDateTime" class="form-control"
+                                :min="minDateTime" :max="maxStartDateTime" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="endDateTime" class="form-label">Quiz End Date & Time</label>
+                            <input type="datetime-local" v-model="endDateTime" id="endDateTime" class="form-control"
+                                :min="startDateTime || minDateTime" :max="maxEndDateTime" required />
+                        </div>
+
+                        <button class="btn btn-primary" @click="assignQuizToStudents">Assign Quiz to Selected
+                            Students</button>
+                    </div>
+
+
                 </div>
 
 
-            </div>
-
-
-            <!-- Right Side: Pending Students -->
-            <div class="col-md-4">
-                <h3>Pending Students</h3>
-                <div class="card-container" style="max-height: 600px; overflow-y: auto;">
-                    <div class="card mb-3"
-                        v-for="(student, index) in pendingStudents.filter(student => student.status === 'pending')"
-                        :key="index">
-                        <div class="card-body">
-                            <h5 class="card-title firstCapital"><strong>Name:</strong> {{ student.name }}</h5>
-                            <p class="card-text"><strong>Email:</strong> {{ student.email }}</p>
-                            <p class="card-text">
-                                <strong>Status: </strong>
-                                <span class="text-warning firstCapital">{{ student.status }}</span>
-                            </p>
-                            <a :href="student.cv_path" target="_blank" class="btn btn-info btn-sm mb-2">View CV</a>
-                            <div class="d-flex justify-content-between">
-                                <button class="btn btn-success" :disabled="loadingComp[student.id]"
-                                    @click="acceptStudent(student.id)">Accept
-                                    <font-awesome-icon v-if="loadingComp[student.id]" :icon="['fas', 'circle-notch']"
-                                        class="fa-lg fa-spin" style="color: white;">
-                                    </font-awesome-icon>
-                                </button>
-                                <button class="btn btn-danger" :disabled="loadingCompReject[student.id]"
-                                    @click="rejectStudent(student.id)">Reject
-                                    <font-awesome-icon v-if="loadingCompReject[student.id]"
-                                        :icon="['fas', 'circle-notch']" class="fa-lg fa-spin" style="color: white;">
-                                    </font-awesome-icon>
-                                </button>
+                <!-- Right Side: Pending Students -->
+                <div class="col-md-4">
+                    <h3>Pending Students</h3>
+                    <div class="card-container" style="max-height: 600px; overflow-y: auto;">
+                        <div class="card mb-3"
+                            v-for="(student, index) in pendingStudents.filter(student => student.status === 'pending')"
+                            :key="index">
+                            <div class="card-body">
+                                <h5 class="card-title firstCapital"><strong>Name:</strong> {{ student.name }}</h5>
+                                <p class="card-text"><strong>Email:</strong> {{ student.email }}</p>
+                                <p class="card-text">
+                                    <strong>Status: </strong>
+                                    <span class="text-warning firstCapital">{{ student.status }}</span>
+                                </p>
+                                <a :href="student.cv_path" target="_blank" class="btn btn-info btn-sm mb-2">View CV</a>
+                                <div class="d-flex justify-content-between">
+                                    <button class="btn btn-success" :disabled="loadingComp[student.id]"
+                                        @click="acceptStudent(student.id)">Accept
+                                        <font-awesome-icon v-if="loadingComp[student.id]"
+                                            :icon="['fas', 'circle-notch']" class="fa-lg fa-spin" style="color: white;">
+                                        </font-awesome-icon>
+                                    </button>
+                                    <button class="btn btn-danger" :disabled="loadingCompReject[student.id]"
+                                        @click="rejectStudent(student.id)">Reject
+                                        <font-awesome-icon v-if="loadingCompReject[student.id]"
+                                            :icon="['fas', 'circle-notch']" class="fa-lg fa-spin" style="color: white;">
+                                        </font-awesome-icon>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -124,6 +128,7 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
+import Header from '@/components/HeaderAndLogout.vue'; // 
 
 const store = useStore();
 let loadingComp = ref({});
@@ -296,6 +301,16 @@ const isQuizAlreadyAssigned = (student) => {
 </script>
 
 <style scoped>
+.main-wrap {
+    background-color: #fbe9d0;
+    width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 80px;
+}
+
 h3 {
     margin-bottom: 20px;
 }

@@ -10,8 +10,7 @@ import ViewSoloResult from '@/components/ViewSoloResult.vue';
 import ViewandSelectQuiz from '@/components/ViewandSelectQuiz.vue';
 import CreateQuiz from '@/components/CreateQuiz.vue';
 import UpdatePassword from '@/components/UpdatePassword.vue';
-import AttemptQuiz from '@/components/AttemptQuiz.vue';
-import CameraAndMic from '@/components/CameraAndMic.vue';
+
 
 const routes = [
   {
@@ -72,22 +71,6 @@ const routes = [
     path: '/updatepassword',  // Define the route for profile submission
     name: 'UpdatePassword',
     component: UpdatePassword,
-  },
-  {
-    path: '/attemptquiz',  // Define the route for profile submission
-    name: 'AttemptQuiz',
-    component: AttemptQuiz,
-  },
-  {
-    path: '/cameraandmic',  // Define the route for profile submission
-    name: 'CameraAndMic',
-    component: CameraAndMic,
-  }
-  ,
-  {
-    path: '/cameraandmic',  // Define the route for profile submission
-    name: 'CameraAndMic',
-    component: CameraAndMic,
   }
 ];
 

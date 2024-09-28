@@ -1,110 +1,120 @@
 <template>
-    <div class="container mt-5">
-        <div class="row g-3">
-            <!-- First Div: Quiz Creation Section (lg: 7 cols) -->
-            <div class="col-lg-7">
-                <form @submit.prevent="createOrUpdateQuiz">
-                    <div class="quiz-creation-section border p-3">
-                        <h3>Create Quiz</h3>
-                        <div class="mb-3">
-                            <label for="quizName" class="form-label">Quiz Name</label>
-                            <input type="text" class="form-control" id="quizName" v-model="quiz.name"
-                                placeholder="Enter Quiz Name" required />
-                        </div>
+    <div class="main-wrap">
+        <div class="container mt-5">
+            <!-- Fixed Dashboard Header -->
+            <Header title="Create and View Quiz" />
 
-                        <div class="questions-section overflow-auto" style="height: 400px;">
-                            <div v-for="(question, index) in quiz.questions" :key="index" class="card mb-4 p-3">
-                                <h5>Question {{ index + 1 }}</h5>
-                                <div class="input-box input-group mb-3">
-                                    <div class="form-floating">
-                                        <textarea style="resize:none;" class="form-control" v-model="question.text"
-                                            id="questionText" placeholder="Enter Question" rows="3" required></textarea>
-                                        <label for="questionText">Question {{ index + 1 }}</label>
-                                    </div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <div class="input-box input-group">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" v-model="question.options[0]"
-                                                    placeholder="Option A" required />
-                                                <label for="optionA">Option A</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="input-box input-group">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" v-model="question.options[1]"
-                                                    placeholder="Option B" required />
-                                                <label for="optionB">Option B</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <div class="input-box input-group">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" v-model="question.options[2]"
-                                                    placeholder="Option C" required />
-                                                <label for="optionC">Option C</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="input-box input-group">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" v-model="question.options[3]"
-                                                    placeholder="Option D" required />
-                                                <label for="optionD">Option D</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+            <!-- Add top padding/margin to offset the fixed header -->
+            <div class="row g-3 pt-5 main-content"> <!-- Adjust based on header height -->
+                <!-- First Div: Quiz Creation Section (lg: 7 cols) -->
+                <div class="col-lg-7 col-md-12">
+                    <form @submit.prevent="createOrUpdateQuiz">
+                        <div class="quiz-section border p-2">
+                            <h3 class="text-muted text-center">Create Quiz</h3>
+                            <div class="mb-2">
+                                <label for="quizName" class="form-label">Quiz Name</label>
+                                <input type="text" class="form-control" id="quizName" v-model="quiz.name"
+                                    placeholder="Enter Quiz Name" required />
+                            </div>
 
-                                <div class="input-box input-group mb-2">
-                                    <div class="form-floating">
-                                        <select class="form-select" v-model="question.correctOption" id="correctOption"
-                                            aria-label="Correct Option" required>
-                                            <option v-for="(option, optIndex) in ['A', 'B', 'C', 'D']" :key="optIndex"
-                                                :value="optIndex">
-                                                {{ option }}
-                                            </option>
-                                        </select>
-                                        <label for="correctOption">Correct Option</label>
+                            <div class="questions-section overflow-height">
+                                <div v-for="(question, index) in quiz.questions" :key="index" class="card mb-4 p-3">
+                                    <h5>Question {{ index + 1 }}</h5>
+                                    <div class="input-box input-group mb-2">
+                                        <div class="form-floating">
+                                            <textarea style="resize:none;" class="form-control" v-model="question.text"
+                                                id="questionText" placeholder="Enter Question" rows="3"
+                                                required></textarea>
+                                            <label for="questionText">Question {{ index + 1 }}</label>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <div class="input-box input-group">
+                                                <div class="form-floating">
+                                                    <input type="text" class="form-control"
+                                                        v-model="question.options[0]" placeholder="Option A" required />
+                                                    <label for="optionA">Option A</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <div class="input-box input-group">
+                                                <div class="form-floating">
+                                                    <input type="text" class="form-control"
+                                                        v-model="question.options[1]" placeholder="Option B" required />
+                                                    <label for="optionB">Option B</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <div class="input-box input-group">
+                                                <div class="form-floating">
+                                                    <input type="text" class="form-control"
+                                                        v-model="question.options[2]" placeholder="Option C" required />
+                                                    <label for="optionC">Option C</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <div class="input-box input-group">
+                                                <div class="form-floating">
+                                                    <input type="text" class="form-control"
+                                                        v-model="question.options[3]" placeholder="Option D" required />
+                                                    <label for="optionD">Option D</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="input-box input-group mb-2">
+                                        <div class="form-floating">
+                                            <select class="form-select" v-model="question.correctOption"
+                                                id="correctOption" aria-label="Correct Option" required>
+                                                <option v-for="(option, optIndex) in ['A', 'B', 'C', 'D']"
+                                                    :key="optIndex" :value="optIndex">
+                                                    {{ option }}
+                                                </option>
+                                            </select>
+                                            <label for="correctOption">Correct Option</label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="text-end">
-                            <button type="button" class="btn btn-success me-2" @click="addQuestion">+ Add
-                                Question</button>
-                            <button type="button" class="btn btn-danger" @click="removeLastQuestion">- Remove Last
-                                Question</button>
+                            <div class="text-end">
+                                <button type="button" class="btn btn-success bg-gradient me-2" @click="addQuestion">+
+                                    Add
+                                    Question</button>
+                                <button type="button" class="btn btn-danger bg-gradient" @click="removeLastQuestion">-
+                                    Remove Last
+                                    Question</button>
+                            </div>
+                            <div class="mt-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    {{ isEditing ? 'Update Quiz' : 'Create Quiz' }}
+                                </button>
+                            </div>
                         </div>
-                        <div class="mt-3">
-                            <button type="submit" class="btn btn-primary w-100">
-                                {{ isEditing ? 'Update Quiz' : 'Create Quiz' }}
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+                    </form>
+                </div>
 
-            <!-- Second Div: Available Quizzes Section (lg: 5 cols) -->
-            <div class="col-lg-5">
-                <div class="quiz-list-section border p-3">
-                    <h3>Available Quizzes for Students</h3>
-                    <div class="overflow-auto" style="max-height: 575px;">
-                        <div v-for="(quiz, index) in quizzes" :key="index" class="card mb-3">
-                            <div class="card-body d-flex justify-content-between align-items-center">
-                                <h5 class="card-title">{{ quiz.name }}</h5>
-                                <div>
-                                    <button class="btn btn-info me-2" @click="editQuiz(index)">Edit</button>
-                                    <button class="btn btn-danger me-2" @click="deleteQuiz(index)">Delete</button>
-                                    <button class="btn btn-secondary">View</button>
+                <!-- Second Div: Available Quizzes Section (lg: 5 cols) -->
+                <div class="col-lg-5 col-md-12">
+                    <div class="quiz-section border p-3">
+                        <h4 class="text-muted text-center">Available Quizzes for Students</h4>
+                        <div class=" overflow-auto" style="height: 535px;">
+                            <div v-for="(quiz, index) in quizzes" :key="index" class="card mb-3">
+                                <div class="card-body d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title">{{ quiz.name }}</h5>
+                                    <div>
+                                        <button class="btn btn-info me-2" @click="editQuiz(index)">Edit</button>
+                                        <button class="btn btn-danger bg-gradient me-2"
+                                            @click="deleteQuiz(index)">Delete</button>
+                                        <button class="btn btn-secondary">View</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -115,10 +125,15 @@
     </div>
 </template>
 
+
 <script>
 import { ref } from "vue";
+import Header from '@/components/HeaderAndLogout.vue'; // 
 
 export default {
+    components: {
+        Header,
+    },
     setup() {
         const quiz = ref({
             name: "",
@@ -134,7 +149,7 @@ export default {
         // Sample data with 4-5 quizzes and 10-20 questions each
         const quizzes = ref([
             {
-                name: "General Knowledge Quiz",
+                name: "General Quiz",
                 questions: Array(10).fill(null).map((_, index) => ({
                     text: `Sample Question ${index + 1}?`,
                     options: ["Option A", "Option B", "Option C", "Option D"],
@@ -164,47 +179,7 @@ export default {
                     options: ["Option A", "Option B", "Option C", "Option D"],
                     correctOption: 3,
                 })),
-            },
-            {
-                name: "Geography Quiz",
-                questions: Array(10).fill(null).map((_, index) => ({
-                    text: `Geography Question ${index + 1}?`,
-                    options: ["Option A", "Option B", "Option C", "Option D"],
-                    correctOption: 0,
-                })),
-            },
-            {
-                name: "Geography Quiz",
-                questions: Array(10).fill(null).map((_, index) => ({
-                    text: `Geography Question ${index + 1}?`,
-                    options: ["Option A", "Option B", "Option C", "Option D"],
-                    correctOption: 0,
-                })),
-            },
-            {
-                name: "Geography Quiz",
-                questions: Array(10).fill(null).map((_, index) => ({
-                    text: `Geography Question ${index + 1}?`,
-                    options: ["Option A", "Option B", "Option C", "Option D"],
-                    correctOption: 0,
-                })),
-            },
-            {
-                name: "Geography Quiz",
-                questions: Array(10).fill(null).map((_, index) => ({
-                    text: `Geography Question ${index + 1}?`,
-                    options: ["Option A", "Option B", "Option C", "Option D"],
-                    correctOption: 0,
-                })),
-            },
-            {
-                name: "Geography Quiz",
-                questions: Array(10).fill(null).map((_, index) => ({
-                    text: `Geography Question ${index + 1}?`,
-                    options: ["Option A", "Option B", "Option C", "Option D"],
-                    correctOption: 0,
-                })),
-            },
+            }
         ]);
 
         const isEditing = ref(false);
@@ -293,14 +268,20 @@ export default {
 </script>
 
 <style>
-.quiz-creation-section {
-    border: 1px solid #ddd;
-    padding: 15px;
-    border-radius: 8px;
-    background-color: #f9f9f9;
+.main-wrap {
+    background-color: #f5ece0;
+    width: 100vw;
+    min-height: 100vh;
+    /* Changed from height to min-height */
+    display: flex;
+    align-items: flex-start;
+    /* Changed from center to flex-start */
+    justify-content: center;
+    padding-top: 30px;
+    /* Default padding to prevent overlap */
 }
 
-.quiz-list-section {
+.quiz-section {
     border: 1px solid #ddd;
     padding: 15px;
     border-radius: 8px;
@@ -309,5 +290,15 @@ export default {
 
 .card {
     background-color: #ffffff;
+}
+
+.btn-red {
+    background-color: #e64833;
+}
+
+/* Show the dashboard by default on larger screens */
+.overflow-height {
+    overflow: auto;
+    height: 390px;
 }
 </style>
