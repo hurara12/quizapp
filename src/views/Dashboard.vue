@@ -5,15 +5,13 @@
 
       <div class="row mt-4">
         <div class="col-lg-4 col-md-6 col-12 mb-4" v-for="(button, index) in buttons" :key="index">
-          <transition name="fade">
-            <div class="card text-center h-100" @click="handleCardClick(index)">
-              <div class="card-body">
-                <h5 class="card-title">{{ button.title }}</h5>
-                <p class="card-text">{{ button.description }}</p>
-                <router-link :to="button.link" class="btn btn-outline-warning">Open</router-link>
-              </div>
+          <div class="card text-center h-100" @click="handleCardClick(index)">
+            <div class="card-body">
+              <h5 class="card-title">{{ button.title }}</h5>
+              <p class="card-text">{{ button.description }}</p>
+              <router-link :to="button.link" class="btn btn-outline-warning">Open</router-link>
             </div>
-          </transition>
+          </div>
         </div>
       </div>
     </div>
@@ -46,13 +44,6 @@ export default {
     const store = useStore();
     const isLoggingOut = ref(false);
 
-    const logout = () => {
-      isLoggingOut.value = true;
-      setTimeout(() => {
-        store.dispatch('clearToken');
-        router.push('/login');
-      }, 300); // Match this duration with the fade-out animation duration
-    };
 
     const handleCardClick = (index) => {
       console.log(`Card ${index + 1} clicked`); // Placeholder for handling card clicks
@@ -60,7 +51,6 @@ export default {
 
     return {
       buttons,
-      logout,
       isLoggingOut,
       handleCardClick
     };
@@ -92,25 +82,5 @@ export default {
 
 .card:active {
   transform: scale(0.95);
-}
-
-.logout-btn {
-  transition: background-color 0.3s ease;
-}
-
-.logout-btn:hover {
-  background-color: rgba(255, 165, 0, 0.8);
-  /* Change this color as needed */
-}
-
-/* Fade Transition */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>

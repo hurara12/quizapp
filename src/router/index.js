@@ -71,7 +71,7 @@ const routes = [
     path: '/updatepassword',  // Define the route for profile submission
     name: 'UpdatePassword',
     component: UpdatePassword,
-  }
+  },
 ];
 
 const router = createRouter({

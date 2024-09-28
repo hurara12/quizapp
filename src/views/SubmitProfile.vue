@@ -1,9 +1,9 @@
 <template>
-    <div class="main-wrap container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="main-wrap d-flex justify-content-center align-items-center min-vh-100">
         <div class="container-fluid d-flex mt-5 justify-content-center">
             <div class="form-container mt-5 justify-content-center p-5 shadow">
                 <h2 class="text-center mb-2">Submit Your Profile</h2>
-                <form @submit.prevent="handleSubmitProfile" class="login-form form-container needs-validation">
+                <form @submit.prevent="handleSubmitProfile" class=" needs-validation">
                     <div v-if="alertMessage" :class="alertClass" role="alert">{{ alertMessage }}</div>
 
                     <!-- First Name Input -->

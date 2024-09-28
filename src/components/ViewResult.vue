@@ -18,7 +18,7 @@
             <div class="row">
                 <transition-group name="fade-slide" tag="div" class="d-flex flex-wrap">
                     <div v-for="(item, index) in paginatedData" :key="index" class="col-12 col-md-6 col-lg-4 p-4">
-                        <div class="card custom-card user-card p-3" :style="{ height: '500px' }">
+                        <div class="card custom-card user-card p-3" :style="{ height: '450px' }">
                             <div class="card-body text-start">
                                 <template v-if="viewMode === 'student'">
                                     <h5 class="card-subtitle mb-2 text-muted text-center">Student Information</h5>

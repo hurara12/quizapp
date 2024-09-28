@@ -1,5 +1,5 @@
 <template>
-  <div class="container d-flex justify-content-center align-items-center min-vh-100">
+  <div class=" d-flex justify-content-center align-items-center min-vh-100">
     <LoginForm />
   </div>
 </template>

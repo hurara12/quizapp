@@ -93,7 +93,7 @@
                                     Question</button>
                             </div>
                             <div class="mt-2">
-                                <button type="submit" class="btn btn-primary w-100">
+                                <button type="submit" class="btn btn-info w-100">
                                     {{ isEditing ? 'Update Quiz' : 'Create Quiz' }}
                                 </button>
                             </div>
@@ -110,10 +110,12 @@
                                 <div class="card-body d-flex justify-content-between align-items-center">
                                     <h5 class="card-title">{{ quiz.name }}</h5>
                                     <div>
-                                        <button class="btn btn-info me-2" @click="editQuiz(index)">Edit</button>
-                                        <button class="btn btn-danger bg-gradient me-2"
+                                        <button class="btn btn-outline-warning bg-gradient me-2"
+                                            @click="editQuiz(index)">Edit</button>
+                                        <button class="btn btn-outline-secondary me-2">View</button>
+                                        <button class="btn btn-outline-danger bg-gradient"
                                             @click="deleteQuiz(index)">Delete</button>
-                                        <button class="btn btn-secondary">View</button>
+
                                     </div>
                                 </div>
                             </div>

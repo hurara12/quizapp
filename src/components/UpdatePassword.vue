@@ -2,10 +2,10 @@
     <div class="main-wrap">
         <div class="container mt-5">
             <Header title="Update Your Profile" />
-            <div class="row justify-content-center">
+            <div class="row justify-content-center ">
                 <!-- Set appropriate column sizes for different screen widths -->
-                <div class="col-12 col-md-8 col-lg-6">
-                    <h3 class="text-center mb-4">Set Password</h3>
+                <div class="col-12 col-md-8 col-lg-6 profile-section">
+                    <h3 class="text-center text-muted mb-4">Set Password</h3>
                     <form @submit.prevent="updatePassword">
                         <div class="row">
                             <!-- New Password Field -->
@@ -41,7 +41,7 @@
                         <div class="row">
                             <div class="col-12">
                                 <!-- Update Password Button -->
-                                <button class="btn btn-primary w-100" type="submit">
+                                <button class="btn w-100" type="submit">
                                     Update Password
                                 </button>
                             </div>
@@ -109,6 +109,13 @@ const updatePassword = async () => {
     padding-top: 60px;
 }
 
+.profile-section {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
 h3 {
     font-size: 1.8rem;
 }
@@ -119,8 +126,13 @@ h3 {
 }
 
 button {
+    background-color: #77b1ad;
     padding: 0.75rem;
     font-size: 1rem;
+}
+
+button:hover {
+    background-color: #8fcbc7;
 }
 
 .alert {

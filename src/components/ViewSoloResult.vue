@@ -204,6 +204,20 @@ export default {
     }
 }
 
+.fade-in-text {
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
 .close-btn {
     position: absolute;
     top: 12px;
@@ -221,20 +235,6 @@ export default {
 
 .custom-height {
     height: 600px;
-}
-
-.fade-in-text {
-    animation: fadeIn 1s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
 }
 
 .profile-card {

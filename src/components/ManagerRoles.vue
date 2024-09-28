@@ -32,7 +32,7 @@
                             </div>
 
                             <!-- Submit Button -->
-                            <button type="submit" class="btn btn-primary w-100">
+                            <button type="submit" class="btn btn-info w-100">
                                 {{ isEditing ? 'Update Role' : 'Add Role' }}
                             </button>
                         </form>
@@ -42,7 +42,7 @@
                 <!-- Right Table -->
                 <div class="col-md-8">
                     <div class="role-section overflow-height">
-                        <h3>Roles</h3>
+                        <h3 class="text-muted text-center">Existing Roles</h3>
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
                                 <thead>
@@ -59,10 +59,10 @@
                                         <td>{{ user.email }}</td>
                                         <td>{{ user.role }}</td>
                                         <td>
-                                            <button class="btn btn-warning btn-sm me-2" @click="editRole(index)">
+                                            <button class="btn btn-warning btn-md me-2" @click="editRole(index)">
                                                 Edit
                                             </button>
-                                            <button class="btn btn-danger btn-sm" @click="deleteRole(index)">
+                                            <button class="btn btn-danger btn-md" @click="deleteRole(index)">
                                                 Delete
                                             </button>
                                         </td>

@@ -1,7 +1,7 @@
 <template>
     <div class="main-wrap">
         <div class="container mt-4">
-            <Header title="Create and View Quiz" />
+            <Header title="Quiz Portal" />
             <!-- Assigned Quizzes -->
             <div class="row"> <!-- Added g-4 for gutter spacing -->
                 <div class="custom-gap card mb-4 col-sm-12 col-md-6 col-lg-4">

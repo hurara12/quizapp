@@ -19,7 +19,6 @@
                     <button class="btn btn-outline-danger" @click="startQuizAndRecording">I Agree</button>
                 </div>
             </div>
-
             <!-- Main Content: Quiz and Camera -->
             <div v-else class="main-content">
                 <!-- Quiz Section -->
@@ -27,11 +26,22 @@
                     <div class="col-lg-8">
                         <div class="quiz-section border p-3"
                             v-if="questions && questions.length > 0 && finished == false">
-                            <p>Total Questions: {{ questions.length }}</p>
-                            <p>Current Question: {{ currentQuestionIndex + 1 }} / {{ questions.length }}</p>
-                            <p>Time for Quiz: <span class="text-warning">{{ formatTime(quizTime) }}</span></p>
-                            <p>Remaining Time for this Question: <span class="text-danger">{{ remainingTime }}
-                                    Seconds</span></p>
+
+
+                            <div class="row">
+                                <div class="col-md-6 text-start">
+                                    <p>Current Question: {{ currentQuestionIndex + 1 }} / {{ questions.length }}</p>
+                                    <p>
+                                        Curr Question Time: <span class="text-danger">{{ remainingTime }} Seconds</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <p>Total Questions: {{ questions.length }}</p>
+                                    <p>
+                                        Time for Quiz: <span class="text-warning">{{ formatTime(quizTime) }}</span>
+                                    </p>
+                                </div>
+                            </div>
 
                             <!--c Qusestion and Options  -->
                             <div class="questions-section">
@@ -98,12 +108,16 @@
                     </div>
                 </div>
                 <!-- Results Section -->
-                <div v-if="finished" class="result-container">
-                    <h3>Quiz Finished</h3>
-                    <p>Marks: {{ correctAnswers }} / {{ questions.length }}</p>
-                    <p>Attempted Questions: {{ attemptedQuestions }}</p>
-                    <p>Correct Questions: {{ correctAnswers }}</p>
-                    <button class="btn btn-secondary" @click="goBack">Go Back</button>
+                <div v-if="finished" class="start-container">
+                    <div class="instruction-card">
+                        <h3 class="card-subtitle mb-2 text-muted text-center">Your Quiz is Finished</h3>
+                        <p class="card-text m-0 p-1">Total Questions: {{ questions.length }}</p>
+                        <p class="card-text m-0 p-1">Attempted Questions: {{ attemptedQuestions }}</p>
+                        <p class="card-text m-0 p-1">Correct Questions: {{ correctAnswers }}</p>
+                        <p class="card-text m-0 p-1">Marks: {{ correctAnswers }} / {{ questions.length }}</p>
+                        <p class="card-text m-0 p-1">Attempted in: <span>{{ formatTime(quizTime) }}</span></p>
+                        <button class="btn btn-secondary" @click="goBack">Go Back</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -387,7 +401,7 @@ p {
 
 .combined-container {
     /* Container for the combined quiz and camera components */
-    width: 1100px;
+    width: 1024px;
     max-width: 100%;
     /* Ensures the container doesn't exceed the screen width */
     margin: auto;
@@ -419,6 +433,8 @@ p {
 }
 
 .instruction-card p {
+    text-align: left;
+    /* Align list to the left */
     margin-bottom: 10px;
 }
 
@@ -486,9 +502,6 @@ p {
     z-index: 1000;
 }
 
-.result-container {
-    text-align: center;
-}
 
 
 .camera-box {
