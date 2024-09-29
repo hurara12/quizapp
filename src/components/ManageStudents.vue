@@ -147,34 +147,9 @@ onMounted(() => {
 
 
 // Get pending students from the store remove sample data later and uncomment this line
-//const pendingStudents = computed(() => store.getters.pendingStudents);
+const pendingStudents = computed(() => store.getters.pendingStudents);
 // Sample Data
-const pendingStudents = computed(() => [
-    { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_path: 'https://example.com/cv1.pdf' },
-    { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'pending', cv_path: 'https://example.com/cv2.pdf' },
-    { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'pending', cv_path: 'https://example.com/cv3.pdf' },
-    { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_path: 'https://example.com/cv1.pdf' },
-    { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'pending', cv_path: 'https://example.com/cv2.pdf' },
-    { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'approved', cv_path: 'https://example.com/cv3.pdf' },
-    { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'approved', cv_path: 'https://example.com/cv1.pdf' },
-    { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'approved', cv_path: 'https://example.com/cv2.pdf' },
-    { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'approved', cv_path: 'https://example.com/cv3.pdf' },
-    { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'approved', cv_path: 'https://example.com/cv1.pdf' },
-    { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'approved', cv_path: 'https://example.com/cv2.pdf' },
-    { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'approved', cv_path: 'https://example.com/cv3.pdf' },
-    { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'approved', cv_path: 'https://example.com/cv1.pdf' },
-    { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'approved', cv_path: 'https://example.com/cv2.pdf' },
-    { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'approved', cv_path: 'https://example.com/cv3.pdf' },
-    { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'approved', cv_path: 'https://example.com/cv1.pdf' },
-    { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'approved', cv_path: 'https://example.com/cv2.pdf' },
-    { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'approved', cv_path: 'https://example.com/cv3.pdf' },
-    { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'approved', cv_path: 'https://example.com/cv1.pdf' },
-    { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'approved', cv_path: 'https://example.com/cv2.pdf' },
-    { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'approved', cv_path: 'https://example.com/cv3.pdf' },
-    { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'approved', cv_path: 'https://example.com/cv1.pdf' },
-    { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'approved', cv_path: 'https://example.com/cv2.pdf' },
-    { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'approved', cv_path: 'https://example.com/cv3.pdf' },
-]);
+
 const availableQuizzes = ref([
     { id: 1, title: 'Quiz 1' },
     { id: 2, title: 'Quiz 2' },
