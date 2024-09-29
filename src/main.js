@@ -7,9 +7,12 @@ import 'bootstrap/dist/js/bootstrap.js';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { fas, faCircleNotch } from '@fortawesome/free-solid-svg-icons';
+import { far, faCircleCheck } from '@fortawesome/free-regular-svg-icons'; // Import the regular circle check icon
+
 
 
 library.add(fas, faCircleNotch);
+library.add(far, faCircleCheck); // Add to the library
 
 const app = createApp(App);
 

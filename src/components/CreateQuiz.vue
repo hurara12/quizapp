@@ -17,7 +17,7 @@
                                     placeholder="Enter Quiz Name" required />
                             </div>
 
-                            <div class="questions-section overflow-height">
+                            <div class="quiz-section overflow-height">
                                 <div v-for="(question, index) in quiz.questions" :key="index" class="card mb-4 p-3">
                                     <h5>Question {{ index + 1 }}</h5>
                                     <div class="input-box input-group mb-2">
@@ -271,7 +271,7 @@ export default {
 
 <style>
 .main-wrap {
-    background-color: #f5ece0;
+    background-color: #fbe9d0;
     width: 100vw;
     min-height: 100vh;
     /* Changed from height to min-height */
