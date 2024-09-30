@@ -1,20 +1,20 @@
 <template>
     <div class="main-wrap">
         <div class="container mt-5">
-            <!-- Fixed Dashboard Header -->
             <Header title="Create and View Quiz" />
 
-            <!-- Add top padding/margin to offset the fixed header -->
-            <div class="row g-3 pt-5 main-content"> <!-- Adjust based on header height -->
-                <!-- First Div: Quiz Creation Section (lg: 7 cols) -->
+            <div class="row g-3 pt-5 main-content">
                 <div class="col-lg-7 col-md-12">
                     <form @submit.prevent="createOrUpdateQuiz">
                         <div class="quiz-section border p-2">
                             <h3 class="text-muted text-center">Create Quiz</h3>
-                            <div class="mb-2">
-                                <label for="quizName" class="form-label">Quiz Name</label>
-                                <input type="text" class="form-control" id="quizName" v-model="quiz.name"
-                                    placeholder="Enter Quiz Name" required />
+                            <div class="mb-2 d-flex align-items-center">
+                                <label for="quizName" class="form-label me-2">Quiz Name</label>
+                                <input type="text" class="form-control me-2" id="quizName" v-model="quiz.name"
+                                    placeholder="Enter Quiz Name" :disabled="isQuizNameAdded" required
+                                    style="flex: 1;" />
+                                <button type="button" class="btn btn-info" @click="addQuiz"
+                                    :disabled="isQuizNameAdded">Add Quiz</button>
                             </div>
 
                             <div class="quiz-section overflow-height">
@@ -22,9 +22,9 @@
                                     <h5>Question {{ index + 1 }}</h5>
                                     <div class="input-box input-group mb-2">
                                         <div class="form-floating">
-                                            <textarea style="resize:none;" class="form-control" v-model="question.text"
-                                                id="questionText" placeholder="Enter Question" rows="3"
-                                                required></textarea>
+                                            <textarea style="resize:none;" class="form-control"
+                                                v-model="question.question_text" id="questionText"
+                                                placeholder="Enter Question" rows="3" required></textarea>
                                             <label for="questionText">Question {{ index + 1 }}</label>
                                         </div>
                                     </div>
@@ -71,14 +71,14 @@
 
                                     <div class="input-box input-group mb-2">
                                         <div class="form-floating">
-                                            <select class="form-select" v-model="question.correctOption"
-                                                id="correctOption" aria-label="Correct Option" required>
-                                                <option v-for="(option, optIndex) in ['A', 'B', 'C', 'D']"
-                                                    :key="optIndex" :value="optIndex">
+                                            <select class="form-select" v-model="question.correct_option"
+                                                id="correct_option" aria-label="Correct Option" required>
+                                                <option v-for="(option, optIndex) in question.options" :key="optIndex"
+                                                    :value="option">
                                                     {{ option }}
                                                 </option>
                                             </select>
-                                            <label for="correctOption">Correct Option</label>
+                                            <label for="correct_option">Correct Option</label>
                                         </div>
                                     </div>
                                 </div>
@@ -88,9 +88,9 @@
                                 <button type="button" class="btn btn-success bg-gradient me-2" @click="addQuestion">+
                                     Add
                                     Question</button>
-                                <button type="button" class="btn btn-danger bg-gradient" @click="removeLastQuestion">-
+                                <!-- <button type="button" class="btn btn-danger bg-gradient" @click="removeLastQuestion">-
                                     Remove Last
-                                    Question</button>
+                                    Question</button> -->
                             </div>
                             <div class="mt-2">
                                 <button type="submit" class="btn btn-info w-100">
@@ -101,7 +101,6 @@
                     </form>
                 </div>
 
-                <!-- Second Div: Available Quizzes Section (lg: 5 cols) -->
                 <div class="col-lg-5 col-md-12">
                     <div class="quiz-section border p-3">
                         <h4 class="text-muted text-center">Available Quizzes for Students</h4>
@@ -131,55 +130,93 @@
 <script>
 import { ref } from "vue";
 import Header from '@/components/HeaderAndLogout.vue'; // 
+import { useStore } from 'vuex';
 
 export default {
     components: {
         Header,
     },
     setup() {
+        const isQuizNameAdded = ref(false);
+
+        const store = useStore();
+
         const quiz = ref({
             name: "",
             questions: [
                 {
-                    text: "",
+                    question_text: "",
                     options: ["", "", "", ""],
-                    correctOption: 0, // A=0, B=1, C=2, D=3
+                    correct_option: '',
                 },
             ],
         });
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        };
+        const now = new Date();
 
-        // Sample data with 4-5 quizzes and 10-20 questions each
+        const addQuiz = async () => {
+            if (quiz.value.name.trim() === "") {
+                alert("Quiz name is required");
+                return;
+            }
+            isQuizNameAdded.value = true;
+            const quizName = {
+                title: quiz.value.name,  // Ensure correct concatenation
+                scheduled_at: formatDate(now),
+                expires_at: formatDate(now),
+            }
+            console.log("QQ ", quizName)
+            try {
+                const success = await store.dispatch('addQuiz', quizName);
+                if (success) {
+
+                    console.log(success)
+                }
+            } catch (error) {
+                console.error('Error submitting profile:', error);
+            }
+
+        };
+        // Sample data i wll replace with backend
         const quizzes = ref([
             {
                 name: "General Quiz",
                 questions: Array(10).fill(null).map((_, index) => ({
-                    text: `Sample Question ${index + 1}?`,
+                    question_text: `Sample Question ${index + 1}?`,
                     options: ["Option A", "Option B", "Option C", "Option D"],
-                    correctOption: 0,
+                    correct_option: 'Option A',
                 })),
             },
             {
                 name: "Science Quiz",
                 questions: Array(15).fill(null).map((_, index) => ({
-                    text: `Science Question ${index + 1}?`,
+                    question_text: `Science Question ${index + 1}?`,
                     options: ["Option A", "Option B", "Option C", "Option D"],
-                    correctOption: 1,
+                    correct_option: 'Option B',
                 })),
             },
             {
                 name: "History Quiz",
                 questions: Array(12).fill(null).map((_, index) => ({
-                    text: `History Question ${index + 1}?`,
+                    question_text: `History Question ${index + 1}?`,
                     options: ["Option A", "Option B", "Option C", "Option D"],
-                    correctOption: 2,
+                    correct_option: 'Option C',
                 })),
             },
             {
                 name: "Math Quiz",
                 questions: Array(20).fill(null).map((_, index) => ({
-                    text: `Math Question ${index + 1}?`,
+                    question_text: `Math Question ${index + 1}?`,
                     options: ["Option A", "Option B", "Option C", "Option D"],
-                    correctOption: 3,
+                    correct_option: 'Option D',
                 })),
             }
         ]);
@@ -191,7 +228,7 @@ export default {
             quiz.value.questions.push({
                 text: "",
                 options: ["", "", "", ""],
-                correctOption: 0,
+                correct_option: '',
             });
         };
 
@@ -202,14 +239,12 @@ export default {
         };
 
         const createOrUpdateQuiz = () => {
-            // Perform HTML form validation check
             const form = document.querySelector('form');
             if (!form.checkValidity()) {
-                form.reportValidity(); // Show native validation messages
+                form.reportValidity();
                 return;
             }
 
-            // Additional custom validation: Ensure all options are filled
             for (const [index, question] of quiz.value.questions.entries()) {
                 if (question.options.some(option => !option.trim())) {
                     alert(`All options must be filled for Question ${index + 1}`);
@@ -217,16 +252,14 @@ export default {
                 }
             }
 
-            // If editing, update the existing quiz
             if (isEditing.value && editingIndex !== null) {
                 quizzes.value[editingIndex] = { ...quiz.value };
                 isEditing.value = false;
                 editingIndex = null;
             } else {
-                // Create a new quiz
                 quizzes.value.push({ ...quiz.value });
             }
-
+            console.log(quiz.value);
             resetQuizForm();
         };
 
@@ -249,7 +282,7 @@ export default {
                     {
                         text: "",
                         options: ["", "", "", ""],
-                        correctOption: 0,
+                        correct_option: 'A',
                     },
                 ],
             };
@@ -264,6 +297,8 @@ export default {
             editQuiz,
             deleteQuiz,
             isEditing,
+            isQuizNameAdded,
+            addQuiz,
         };
     },
 };
@@ -274,13 +309,10 @@ export default {
     background-color: #fbe9d0;
     width: 100vw;
     min-height: 100vh;
-    /* Changed from height to min-height */
     display: flex;
     align-items: flex-start;
-    /* Changed from center to flex-start */
     justify-content: center;
     padding-top: 30px;
-    /* Default padding to prevent overlap */
 }
 
 .quiz-section {
@@ -298,7 +330,6 @@ export default {
     background-color: #e64833;
 }
 
-/* Show the dashboard by default on larger screens */
 .overflow-height {
     overflow: auto;
     height: 390px;

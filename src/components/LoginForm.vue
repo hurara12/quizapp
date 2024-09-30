@@ -36,7 +36,6 @@
             </button>
           </div>
 
-          <!-- Button to navigate to profile submission -->
           <div class="text-center mt-3">
             <button @click="navigateToProfile" class="btn btn-link">
               New User? Submit your profile
@@ -76,7 +75,7 @@ export default {
         displayAlert('Successfully Logged in', 'alert alert-success');
         loadingComp.value = false;
         setTimeout(() => {
-          router.push('/dashboard'); // Navigate to the dashboard after 1.5 seconds
+          router.push('/dashboard');
         }, 1500);
       } else {
         displayAlert('User not Found', 'alert alert-danger');

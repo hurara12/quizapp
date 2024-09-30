@@ -202,7 +202,7 @@ export default {
         const startQuizAndRecording = async () => {
             started.value = true;
             startTimers();
-            //await startRecording(); // Start recording when quiz starts
+            await startRecording(); // Start recording when quiz starts
         };
 
         const startTimers = () => {
@@ -309,14 +309,11 @@ export default {
                 streamRef.value = null;
                 console.log("Camera and microphone stopped.");
             }
-
             if (mediaRecorder.value && mediaRecorder.value.state !== "inactive") {
                 mediaRecorder.value.stop();
             }
-
             isRecording.value = false;
         };
-
         const saveVideoToLocal = () => {
             const blob = new Blob(recordedChunks.value, { type: 'video/webm' });
             const url = window.URL.createObjectURL(blob);
@@ -332,7 +329,6 @@ export default {
         const goBack = () => {
             router.replace("/viewandselectquiz");
         };
-
         // Automatically save recording when the document is not visible
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'hidden' && isRecording.value) {
@@ -340,7 +336,6 @@ export default {
                 saveVideoToLocal();
             }
         };
-
         // Add event listener for visibility change to handle tab/browser switches
         onMounted(() => {
             document.addEventListener('visibilitychange', handleVisibilityChange);

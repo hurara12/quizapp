@@ -3,26 +3,25 @@
         <div class="container mt-5">
             <Header title="Add and Manage Role" />
             <div class="row g-5">
-                <!-- Left Form -->
                 <div class="col-md-4">
                     <div class="role-section overflow-height">
                         <h3 class="text-center text-muted">{{ isEditing ? 'Edit Role' : 'Add Role' }}</h3>
                         <form @submit.prevent="isEditing ? updateRole() : addRole()">
-                            <!-- Name Field -->
+                            <!-- Name  -->
                             <div class="form-floating mb-3">
                                 <input v-model="formData.name" type="text" class="form-control" id="name"
                                     placeholder="Enter Name" required />
                                 <label for="name">Name</label>
                             </div>
 
-                            <!-- Email Field -->
+                            <!-- Email  -->
                             <div class="form-floating mb-3">
                                 <input v-model="formData.email" type="email" class="form-control" id="email"
                                     placeholder="Enter Email" required />
                                 <label for="email">Email</label>
                             </div>
 
-                            <!-- Role Field -->
+                            <!-- Role  -->
                             <div class="form-floating mb-3">
                                 <select v-model="formData.role" id="role" class="form-select" required>
                                     <option value="manager">Manager</option>
@@ -31,7 +30,7 @@
                                 <label for="role">Role</label>
                             </div>
 
-                            <!-- Submit Button -->
+                            <!-- Submit btn -->
                             <button type="submit" class="btn btn-info w-100">
                                 {{ isEditing ? 'Update Role' : 'Add Role' }}
                             </button>
@@ -39,7 +38,6 @@
                     </div>
                 </div>
 
-                <!-- Right Table -->
                 <div class="col-md-8">
                     <div class="role-section overflow-height">
                         <h3 class="text-muted text-center">Existing Roles</h3>
@@ -79,58 +77,53 @@
 
 <script setup>
 import { reactive, ref, onMounted } from 'vue';
-import axios from 'axios'; // This will help later for API
+import axios from 'axios'; 
 import { useStore } from 'vuex';
-import Header from '@/components/HeaderAndLogout.vue'; // 
+import Header from '@/components/HeaderAndLogout.vue'; 
 
 const store = useStore();
-// Form data object
+
 const formData = reactive({
     name: '',
     email: '',
     role: 'manager',
 });
 
-// Vuex users state (or can be fetched later)
+
 const users = ref([]);
 
-// Edit control flags
 const isEditing = ref(false);
 const editIndex = ref(null);
 
-// Add new role
+
 const addRole = async () => {
     try {
         const success = await store.dispatch('addRole', formData);
         if (success) {
-            users.value.push({ ...formData }); // Add the new role to users
-            resetForm(); // Reset the form after adding
+            users.value.push({ ...formData }); // Add  new role
+            resetForm(); // Reset form after adding
         }
     } catch (error) {
         console.error('Error adding role:', error);
     }
 };
 
-// Edit existing role
+
 const editRole = (index) => {
     isEditing.value = true;
     editIndex.value = index;
     Object.assign(formData, users.value[index]);
 };
 
-// Update role
 const updateRole = () => {
     Object.assign(users.value[editIndex.value], { ...formData });
     isEditing.value = false;
     resetForm();
 };
 
-// Delete role
 const deleteRole = (index) => {
     users.value.splice(index, 1);
 };
-
-// Reset form
 const resetForm = () => {
     formData.name = '';
     formData.email = '';
@@ -138,7 +131,6 @@ const resetForm = () => {
     isEditing.value = false;
 };
 
-// On mounted (can later integrate this with Vuex or API call)
 onMounted(async () => {
     try {
         const response = await axios.get('/db.json');

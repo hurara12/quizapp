@@ -101,7 +101,7 @@ export default {
 }
 
 .page-item.active .page-link {
-    background-color: #007bff;
-    border-color: #007bff;
+    background-color: #61aeff;
+    border-color: #48698d;
 }
 </style>

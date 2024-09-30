@@ -1,12 +1,10 @@
 <template>
     <div class="dashboard-header fixed-top w-100">
         <div class="header-container d-flex align-items-top justify-content-between p-4 shadow">
-            <!-- Centered Dashboard Title -->
             <div class="d-flex justify-content-center flex-grow-1">
                 <h1 class="text-white">{{ title }}</h1>
             </div>
 
-            <!-- Logout Button aligned to the right -->
             <div class="d-flex justify-content-end ms-auto">
                 <transition name="fade">
                     <button @click="logout" class="btn logout-btn" v-if="!isLoggingOut">
@@ -43,7 +41,7 @@ export default {
             setTimeout(() => {
                 store.dispatch('clearToken');
                 router.push('/login');
-            }, 300); // Match this duration with the fade-out animation duration
+            }, 300); 
         };
 
         return {
@@ -75,7 +73,6 @@ h1 {
     margin: 0;
 }
 
-/* Logout button styling */
 .logout-btn {
     background-color: transparent;
     border: none;
@@ -86,7 +83,6 @@ h1 {
     opacity: 0.8;
 }
 
-/* Responsive adjustments */
 @media (max-width: 1024px) {
     h1 {
         font-size: 2rem;

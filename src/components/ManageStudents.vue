@@ -1,21 +1,19 @@
 <template>
-    <!-- // rejected ka time ni a raha. or rejected mn bi assign quiz dikha raha hy  -->
+
     <div class="main-wrap">
         <div class="container mt-5">
             <Header title="Manage Student" />
             <div class="row">
-                <!-- Left Side: Accepted and Rejected Students -->
                 <div class="col-md-8 pe-3">
                     <div class="box-section">
                         <h3 class="text-center text-muted">Students</h3>
 
-                        <!-- Search Bar and Dropdown Filter -->
                         <div class="d-flex mb-3">
                             <input type="text" v-model="searchQuery" class="form-control me-2"
                                 placeholder="Search by Name, Phone, Email, or Quizzes" />
                             <select v-model="filterStatus" class="form-select"
-                                :class="{ 'text-success': filterStatus === 'approved', 'text-danger': filterStatus === 'rejected' }">
-                                <option value="approved" class="text-success">Accepted</option>
+                                :class="{ 'text-success': filterStatus === 'aceepted', 'text-danger': filterStatus === 'rejected' }">
+                                <option value="accepted" class="text-success">Accepted</option>
                                 <option value="rejected" class="text-danger">Rejected</option>
                             </select>
 
@@ -29,8 +27,8 @@
                                         <th>Email</th>
                                         <th>View CV</th>
                                         <th>Status</th>
-                                        <th v-if="filterStatus === 'approved'">Assigned</th>
-                                        <th v-if="filterStatus === 'approved'">Assign</th>
+                                        <th v-if="filterStatus === 'accepted'">Assigned</th>
+                                        <th v-if="filterStatus === 'accepted'">Assign</th>
                                         <th v-if="filterStatus === 'rejected'">Rejected At</th>
                                     </tr>
                                 </thead>
@@ -38,15 +36,15 @@
                                     <tr v-for="(student, index) in filteredStudents" :key="index">
                                         <td class="firstCapital">{{ student.name }}</td>
                                         <td>{{ student.email }}</td>
-                                        <td><a :href="student.cv_path" target="_blank"
+                                        <td><a :href="student.cv_file" target="_blank"
                                                 class="btn btn-outline-info btn-sm">View
                                                 CV</a>
                                         </td>
                                         <td class="firstCapital"
-                                            :class="{ 'text-success': filterStatus === 'approved', 'text-danger': filterStatus === 'rejected' }">
+                                            :class="{ 'text-success': filterStatus === 'accepted', 'text-danger': filterStatus === 'rejected' }">
                                             {{ student.status }}</td>
-                                        <td v-if="filterStatus === 'approved'">{{ student.created_at }}</td>
-                                        <td v-if="filterStatus === 'approved'">
+                                        <td v-if="filterStatus === 'accepted'">{{ student.created_at }}</td>
+                                        <td v-if="filterStatus === 'accepted'">
                                             <input type="checkbox"
                                                 :disabled="isQuizAlreadyAssigned(student) || student.status === 'rejected'"
                                                 @change="toggleQuizAssignment(student)" />
@@ -60,8 +58,7 @@
                             </table>
                         </div>
 
-                        <!-- Assign Quiz Div -->
-                        <div v-if="showAssignDiv && filterStatus === 'approved'" class="my-4">
+                        <div v-if="showAssignDiv && filterStatus === 'accepted'" class="my-4">
                             <label for="availableQuizzes" class="form-label">Available Quizzes</label>
                             <select v-model="selectedQuiz" id="availableQuizzes" class="form-select mb-3" required>
                                 <option value="" disabled>Select a Quiz</option> <!-- Default option -->
@@ -91,8 +88,6 @@
                     </div>
                 </div>
 
-
-                <!-- Right Side: Pending Students -->
                 <div class="col-md-4 box-section">
                     <h3 class="text-center text-muted">Pending Students</h3>
                     <div class="card-container"
@@ -107,7 +102,7 @@
                                     <strong>Status: </strong>
                                     <span class="text-warning firstCapital">{{ student.status }}</span>
                                 </p>
-                                <a :href="student.cv_path" target="_blank" class="btn btn-outline-info btn-sm mb-2">View
+                                <a :href="student.cv_file" target="_blank" class="btn btn-outline-info btn-sm mb-2">View
                                     CV</a>
                                 <div class="d-flex justify-content-between">
                                     <button class="btn btn-success me-2" :disabled="loadingComp[student.id]"
@@ -142,13 +137,41 @@ let loadingComp = ref({});
 let loadingCompReject = ref({});
 
 onMounted(() => {
-    store.dispatch('fetchPendingStudents'); // Fetch pending students from the backend
+    store.dispatch('fetchPendingStudents');
 });
 
 
-// Get pending students from the store remove sample data later and uncomment this line
 const pendingStudents = computed(() => store.getters.pendingStudents);
-// Sample Data
+// const pendingStudents = computed(() => [
+//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
+//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
+//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
+//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
+//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
+//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
+//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
+//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
+//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
+//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
+//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
+//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
+//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
+//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
+//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
+//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
+//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
+//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
+//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
+//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
+//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
+//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
+//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
+//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
+//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
+//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
+//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
+
+// ]);
 
 const availableQuizzes = ref([
     { id: 1, title: 'Quiz 1' },
@@ -160,12 +183,11 @@ const selectedStudents = ref([]);
 const selectedQuiz = ref('');
 const showAssignDiv = ref(false);
 const searchQuery = ref('');
-const filterStatus = ref('approved'); // Filter for accepted/rejected students
+const filterStatus = ref('accepted');
 
 const startDateTime = ref('');
 const endDateTime = ref('');
 
-// Toggle student selection for quiz assignment
 const toggleQuizAssignment = (student) => {
     if (selectedStudents.value.includes(student)) {
         selectedStudents.value = selectedStudents.value.filter((s) => s !== student);
@@ -174,9 +196,9 @@ const toggleQuizAssignment = (student) => {
     }
     showAssignDiv.value = selectedStudents.value.length > 0;
 };
-// Minimum allowed date/time (now or later)
-const minDateTime = ref(new Date().toISOString().slice(0, 16)); // ISO 8601 format for 'yyyy-MM-ddTHH:mm'
-// Maximum start date-time (30 days from today)
+
+const minDateTime = ref(new Date().toISOString().slice(0, 16));
+
 const today = new Date();
 const maxStartDate = new Date(today);
 maxStartDate.setDate(today.getDate() + 30);
@@ -294,8 +316,7 @@ const filteredStudents = computed(() => {
     return pendingStudents.value.filter(student => {
         const matchesQuery = student.name.toLowerCase().includes(searchQuery.value.toLowerCase())
             || student.email.toLowerCase().includes(searchQuery.value.toLowerCase())
-            || student.status.toLowerCase().includes(searchQuery.value.toLowerCase());
-
+            || student.status.toLowerCase().includes(searchQuery.value.toLowerCase())
         return matchesQuery && student.status === filterStatus.value;
     });
 });
