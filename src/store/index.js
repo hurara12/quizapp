@@ -21,7 +21,7 @@ export default createStore({
   state: {
     token: null,
     user: null,
-    quizzes: [], // Stores all quiz categories
+    quizzesData: [], // Stores all quiz categories
     selectedQuiz: null, // Stores the currently selected quiz
     pendingStudents: [], // Holds the fetched pending students data
   },
@@ -35,8 +35,8 @@ export default createStore({
       deleteFromLocalStorage('token');
       deleteFromLocalStorage('role');
     },
-    setQuizzes(state, quizzes) {
-      state.quizzes = quizzes;
+    quizesData(state, quizzes) {
+      state.quizzesData = quizzes;
     },
     selectQuiz(state, quiz) {
       state.selectedQuiz = quiz;
@@ -58,41 +58,6 @@ export default createStore({
       rejectedStudent.rejectedAt = new Date().toLocaleDateString(); // Add rejection date
       // You can also add this to a rejectedStudents array in state
     },
-    // Student and Quiz Mutations
-    //   SET_ACCEPTED_STUDENTS(state, students) {
-    //     state.acceptedStudents = students;
-    //   },
-    //   SET_PENDING_STUDENTS(state, students) {
-    //     state.pendingStudents = students;
-    //   },
-    //   SET_AVAILABLE_QUIZZES(state, quizzes) {
-    //     state.availableQuizzes = quizzes;
-    //   },
-    //   SET_QUIZ_ASSIGNMENTS(state, assignments) {
-    //     state.quizAssignments = assignments;
-    //   },
-    //   ASSIGN_QUIZ_TO_STUDENT(state, { studentEmail, quiz }) {
-    //     const assignment = state.quizAssignments.find(a => a.quizId === quiz.id);
-    //     if (!assignment) {
-    //       // If there's no assignment for this quiz, create one
-    //       state.quizAssignments.push({
-    //         quizId: quiz.id,
-    //         quizTitle: quiz.title,
-    //         assignments: [{ studentEmail, assignedAt: new Date().toISOString() }],
-    //       });
-    //     } else {
-    //       const studentAssigned = assignment.assignments.some(a => a.studentEmail === studentEmail);
-    //       if (!studentAssigned) {
-    //         assignment.assignments.push({ studentEmail, assignedAt: new Date().toISOString() });
-    //       }
-    //     }
-    //   },
-    //   UNASSIGN_QUIZ(state, { studentEmail, quizId }) {
-    //     const assignment = state.quizAssignments.find(a => a.quizId === quizId);
-    //     if (assignment) {
-    //       assignment.assignments = assignment.assignments.filter(a => a.studentEmail !== studentEmail);
-    //     }
-    //   },
   },
   actions: {
     async addQuiz({ commit }, quizData) {
@@ -107,18 +72,24 @@ export default createStore({
 
         const response = await axios.post(`${url}/api/create-quiz`, quizData, config);
 
-        console.log('data ', response.data);
-        return true;
+        const quizid = response.data.quiz.id;
+        console.log('data ', quizid);
+        return quizid;
       } catch (error) {
         console.error('Error', error.response ? error.response.data : error);
-        return false;
+        return '';
       }
     },
     async addQuestion({ commit }, quizData) {
       try {
         console.log('Received formData:', quizData);
-
-        const response = await axios.post(`${url}/api/create-quiz`, quizData);
+        const token = loadFromLocalStorage("token");
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+        const response = await axios.post(`${url}/api/create-questions`, quizData, config);
 
         console.log('data ', response.data);
         return true;
@@ -144,27 +115,19 @@ export default createStore({
         console.error('Error fetching pending students:', error);
       }
     },
-    async acceptStudent({ commit }, id) {
+    async acceptAndReject({ commit }, { id, action }) {
 
       try {
+        const token = loadFromLocalStorage("token");
+        console.log(action)
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
         console.log('Cred ', id);
-        const response = await axios.post('http://192.168.15.243:8000/api/admin/approve', {
-          id
-        }); // Simulated API call
-        console.log(response.data);
-        return true;
-      } catch (error) {
-        console.error('Error', error.response ? error.response.data : error);
-        return false;
-      }
-    },
-
-    async rejectStudent({ commit }, id) {
-      try {
-        console.log('Cred ', id);
-        const response = await axios.post('http://192.168.15.243:8000/api/admin/reject', {
-          id
-        }); // Simulated API call
+        const response = await axios.patch(`${url}/api/admin/submission/${id}/${action}`, {}, config
+        ); // Simulated API call
         console.log(response.data);
         return true;
       } catch (error) {
@@ -263,13 +226,37 @@ export default createStore({
 
     async fetchQuizzes({ commit }) {
       try {
+        const token = loadFromLocalStorage("token");
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
         // Fetch quizzes from your db.json (update URL with the correct path to your db.json file)
-        const response = await axios.get('http://localhost:3000/quizzes');
-        commit('setQuizzes', response.data);
+        const response = await axios.get(`${url}/api/view-quizzes`, config);
+        console.log(response.data);
+        commit('quizesData', response.data);
       } catch (error) {
         console.error('Error fetching quizzes:', error);
       }
     },
+    async assignQuiz({ commit }, data) {
+      try {
+        const token = loadFromLocalStorage("token");
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+        // Fetch quizzes from your db.json (update URL with the correct path to your db.json file)
+        const response = await axios.post(`${url}/api/assign-quiz`, data, config);
+        console.log(response.data);
+      } catch (error) {
+        console.error('Error fetching quizzes:', error);
+      }
+    },
+
+
     selectQuiz({ commit, state }, quizId) {
       const selectedQuiz = state.quizzes.find((quiz) => quiz.id === quizId);
       commit('selectQuiz', selectedQuiz);
@@ -278,77 +265,6 @@ export default createStore({
       commit('CLEAR_TOKEN');
       return true;
     },
-
-    // Fetch Students Based on Status (Pending/Accepted)
-    // async fetchStudents({ commit }) {
-    //   try {
-    //     const response = await axios.get('http://localhost:3000/studentRequests');  // Simulated API call
-    //     const studentRequests = response.data.studentRequests;
-
-    //     const acceptedStudents = studentRequests.filter(student => student.status === 'accepted');
-    //     const pendingStudents = studentRequests.filter(student => student.status === 'pending');
-
-    //     commit('SET_ACCEPTED_STUDENTS', acceptedStudents);
-    //     commit('SET_PENDING_STUDENTS', pendingStudents);
-    //   } catch (error) {
-    //     console.error('Error fetching students:', error);
-    //   }
-    // },
-
-    // // Fetch Available Quizzes
-    // async fetchQuizzes({ commit }) {
-    //   try {
-    //     const response = await axios.get('/http://localhost:3000/quizzes');  // Simulated API call
-    //     commit('SET_AVAILABLE_QUIZZES', response.data.quizzes);
-    //   } catch (error) {
-    //     console.error('Error fetching quizzes:', error);
-    //   }
-    // },
-
-    // // Fetch Quiz Assignments
-    // async fetchQuizAssignments({ commit }) {
-    //   try {
-    //     const response = await axios.get('http://localhost:3000/quizAssignments');  // Simulated API call
-    //     commit('SET_QUIZ_ASSIGNMENTS', response.data.quizAssignments);
-    //   } catch (error) {
-    //     console.error('Error fetching quiz assignments:', error);
-    //   }
-    // },
-
-    // Assign Quiz to Selected Students
-    // async assignQuiz({ commit, state }, { selectedStudents, quiz }) {
-    //   try {
-    //     selectedStudents.forEach(student => {
-    //       // Check if the quiz is already assigned to the student
-    //       const isAlreadyAssigned = state.quizAssignments.some(assignment =>
-    //         assignment.quizId === quiz.id && assignment.assignments.some(a => a.studentEmail === student.email)
-    //       );
-
-    //       if (!isAlreadyAssigned) {
-    //         commit('ASSIGN_QUIZ_TO_STUDENT', { studentEmail: student.email, quiz });
-    //       }
-    //     });
-
-    //     // Simulate saving the quiz assignment to the backend
-    //     await axios.post('/save-quiz-assignments', { quizId: quiz.id, selectedStudents });
-
-    //     return true;
-    //   } catch (error) {
-    //     console.error('Error assigning quiz:', error);
-    //     return false;
-    //   }
-    // },
-
-    // // Accept and Reject Student Actions
-    // acceptStudent({ commit, state }, index) {
-    //   const student = state.pendingStudents[index];
-    //   commit('SET_ACCEPTED_STUDENTS', [...state.acceptedStudents, student]);
-    //   commit('SET_PENDING_STUDENTS', state.pendingStudents.filter((_, i) => i !== index));
-    // },
-
-    // rejectStudent({ commit, state }, index) {
-    //   commit('SET_PENDING_STUDENTS', state.pendingStudents.filter((_, i) => i !== index));
-    // },
   },
   getters: {
     // Auth Getters
@@ -357,16 +273,8 @@ export default createStore({
     pendingStudents(state) {
       return state.pendingStudents;
     },
-    // Student and Quiz Getters
-    // getAcceptedStudents: (state) => state.acceptedStudents,
-    // getPendingStudents: (state) => state.pendingStudents,
-    // getAvailableQuizzes: (state) => state.availableQuizzes,
-
-    // // Fetch Assigned Quizzes for a Student
-    // getAssignedQuizzesForStudent: (state) => (studentEmail) => {
-    //   return state.quizAssignments
-    //     .filter(assignment => assignment.assignments.some(a => a.studentEmail === studentEmail))
-    //     .map(assignment => assignment.quizTitle);
-    // },
+    quizesData(state) {
+      return state.quizzesData;
+    }
   },
 });

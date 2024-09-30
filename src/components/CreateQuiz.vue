@@ -88,9 +88,9 @@
                                 <button type="button" class="btn btn-success bg-gradient me-2" @click="addQuestion">+
                                     Add
                                     Question</button>
-                                <!-- <button type="button" class="btn btn-danger bg-gradient" @click="removeLastQuestion">-
+                                <button type="button" class="btn btn-danger bg-gradient" @click="removeLastQuestion">-
                                     Remove Last
-                                    Question</button> -->
+                                    Question</button>
                             </div>
                             <div class="mt-2">
                                 <button type="submit" class="btn btn-info w-100">
@@ -138,11 +138,12 @@ export default {
     },
     setup() {
         const isQuizNameAdded = ref(false);
-
+        let quizid = ref('');
         const store = useStore();
 
         const quiz = ref({
             name: "",
+            quiz_id: '',
             questions: [
                 {
                     question_text: "",
@@ -177,14 +178,79 @@ export default {
             try {
                 const success = await store.dispatch('addQuiz', quizName);
                 if (success) {
-
-                    console.log(success)
+                    quiz.value.quiz_id = success; // Set the quiz ID received from the API
+                    console.log('Quiz ID received: ', quiz.value.quiz_id);
                 }
             } catch (error) {
                 console.error('Error submitting profile:', error);
             }
 
         };
+        const createQuizoApi = async () => {
+            try {
+                // Ensure 'quiz.value.questions' is defined and valid
+                if (quiz.value.questions && quiz.value.questions.length > 0 && quiz.value.quiz_id) {
+                    // Loop through all questions in the quiz
+                    const quiz_id = quiz.value.quiz_id;
+                    for (const question of quiz.value.questions) {
+                        const { question_text, options, correct_option } = question;
+
+                        const q = {
+                            question_text,
+                            options,
+                            correct_option,
+                            quiz_id // Use the quiz_id obtained from addQuiz
+                        };
+
+                        console.log("Question being added: ", q);
+
+                        const success = await store.dispatch('addQuestion', q);
+
+                        if (success) {
+                            console.log('Question added successfully:', success);
+                        } else {
+                            console.warn('Failed to add question:', success);
+                        }
+                    }
+                } else {
+                    console.warn('No questions available to add or quiz ID is missing.');
+                }
+            } catch (error) {
+                console.error('Error adding questions:', error);
+            }
+        };
+
+        // const addQuestionToApi = async () => {
+        //     try {
+        //         // Ensure 'quiz.value.questions' and 'questions' are defined and valid
+        //         if (quiz.value.questions && quiz.value.questions.length > 0 && quiz.value.quiz_id) {
+        //             const { question_text,
+        //                 options,
+        //                 correct_option } = quiz.value.questions[quiz.value.questions.length - 1];
+        //             const q = {
+        //                 question_text,
+        //                 options,
+        //                 correct_option,
+        //                 quiz_id: quiz.value.quiz_id // Use the quiz_id obtained from addQuiz
+        //             };
+
+        //             console.log("Question being added: ", q);
+
+        //             const success = await store.dispatch('addQuestion', q);
+
+        //             if (success) {
+        //                 console.log('Question added successfully:', success);
+        //             } else {
+        //                 console.warn('Failed to add question:', success);
+        //             }
+        //         } else {
+        //             console.warn('No questions available to add.');
+        //         }
+        //     } catch (error) {
+        //         console.error('Error adding question:', error);
+        //     }
+
+        // };
         // Sample data i wll replace with backend
         const quizzes = ref([
             {
@@ -225,10 +291,12 @@ export default {
         let editingIndex = null;
 
         const addQuestion = () => {
+            //addQuestionToApi();
             quiz.value.questions.push({
-                text: "",
+                question_text: "",
                 options: ["", "", "", ""],
                 correct_option: '',
+                quiz_id: '',
             });
         };
 
@@ -257,7 +325,7 @@ export default {
                 isEditing.value = false;
                 editingIndex = null;
             } else {
-                quizzes.value.push({ ...quiz.value });
+                createQuizoApi();
             }
             console.log(quiz.value);
             resetQuizForm();
@@ -299,6 +367,7 @@ export default {
             isEditing,
             isQuizNameAdded,
             addQuiz,
+            quizid,
         };
     },
 };

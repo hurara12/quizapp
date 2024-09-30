@@ -61,22 +61,24 @@
                         <div v-if="showAssignDiv && filterStatus === 'accepted'" class="my-4">
                             <label for="availableQuizzes" class="form-label">Available Quizzes</label>
                             <select v-model="selectedQuiz" id="availableQuizzes" class="form-select mb-3" required>
-                                <option value="" disabled>Select a Quiz</option> <!-- Default option -->
-                                <option v-for="quiz in availableQuizzes" :key="quiz.id" :value="quiz.title">
+                                <option value="" disabled>Select a Quiz</option>
+                                <option v-for="quiz in availableQuizzesList" :key="quiz.id" :value="quiz.id">
                                     {{ quiz.title }}
                                 </option>
                             </select>
 
+
+
                             <div class="mb-3">
-                                <label for="startDateTime" class="form-label">Quiz Start Date & Time</label>
-                                <input type="datetime-local" v-model="startDateTime" id="startDateTime"
-                                    class="form-control" :min="minDateTime" :max="maxStartDateTime" required />
+                                <label for="startDate" class="form-label">Quiz Start Date</label>
+                                <input type="date" v-model="startDate" id="startDate" class="form-control"
+                                    :min="minDate" :max="maxStartDate" required />
                             </div>
 
                             <div class="mb-3">
-                                <label for="endDateTime" class="form-label">Quiz End Date & Time</label>
-                                <input type="datetime-local" v-model="endDateTime" id="endDateTime" class="form-control"
-                                    :min="startDateTime || minDateTime" :max="maxEndDateTime" required />
+                                <label for="endDate" class="form-label">Quiz End Date</label>
+                                <input type="date" v-model="endDate" id="endDate" class="form-control"
+                                    :min="startDate || minDate" :max="maxEndDate" required />
                             </div>
 
                             <button class="btn btn-primary" @click="assignQuizToStudents">Assign Quiz to Selected
@@ -136,12 +138,20 @@ const store = useStore();
 let loadingComp = ref({});
 let loadingCompReject = ref({});
 
-onMounted(() => {
+onMounted(async () => {
     store.dispatch('fetchPendingStudents');
+    try {
+        await store.dispatch('fetchQuizzes'); // Ensure fetching completes
+        availableQuizzes(); // Populate availableQuizzesList after fetch
+    } catch (error) {
+        console.error('Error fetching quizzes:', error);
+    }
 });
 
 
+
 const pendingStudents = computed(() => store.getters.pendingStudents);
+const quizList = computed(() => store.getters.quizesData);
 // const pendingStudents = computed(() => [
 //     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
 //     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
@@ -173,11 +183,20 @@ const pendingStudents = computed(() => store.getters.pendingStudents);
 
 // ]);
 
-const availableQuizzes = ref([
-    { id: 1, title: 'Quiz 1' },
-    { id: 2, title: 'Quiz 2' },
-    { id: 3, title: 'Quiz 3' },
-]);
+const availableQuizzesList = ref([]); // This will store available quizzes
+
+const availableQuizzes = () => {
+    console.log("Available Quizzes Triggered");
+    if (quizList.value && quizList.value.length > 0) {
+        // Map only the 'id' and 'title' from quizList
+        console.log("Quizzes: ", quizList.value);
+        availableQuizzesList.value = quizList.value.map(quiz => ({
+            id: quiz.id,
+            title: quiz.title,
+        }));
+    }
+};
+
 
 const selectedStudents = ref([]);
 const selectedQuiz = ref('');
@@ -185,8 +204,6 @@ const showAssignDiv = ref(false);
 const searchQuery = ref('');
 const filterStatus = ref('accepted');
 
-const startDateTime = ref('');
-const endDateTime = ref('');
 
 const toggleQuizAssignment = (student) => {
     if (selectedStudents.value.includes(student)) {
@@ -197,76 +214,85 @@ const toggleQuizAssignment = (student) => {
     showAssignDiv.value = selectedStudents.value.length > 0;
 };
 
-const minDateTime = ref(new Date().toISOString().slice(0, 16));
+// Minimum date: today's date
+const minDate = ref(new Date().toISOString().slice(0, 10));
 
+// Maximum start date: 30 days from today
 const today = new Date();
-const maxStartDate = new Date(today);
-maxStartDate.setDate(today.getDate() + 30);
-const maxStartDateTime = ref(maxStartDate.toISOString().slice(0, 16)); // Start date limit: 30 days from today
+const maxStartDateValue = new Date(today);
+maxStartDateValue.setDate(today.getDate() + 30);
+const maxStartDate = ref(maxStartDateValue.toISOString().slice(0, 10)); // Start date limit: 30 days from today
 
-// Maximum end date-time (dynamically set based on start date)
-const maxEndDateTime = ref('');
-// Watch the startDateTime value and calculate the max allowed endDateTime (30 days from start)
-watch(startDateTime, (newStart) => {
+// Maximum end date (dynamically set based on start date)
+const maxEndDate = ref('');
+
+// Reactive properties for start and end dates
+const startDate = ref('');
+const endDate = ref('');
+
+// Watch the startDate value and calculate the max allowed endDate (30 days from start)
+watch(startDate, (newStart) => {
     if (newStart) {
         const start = new Date(newStart);
 
-        // Maximum end date is 30 days after start date, but no more than 60 days from today
+        // Maximum end date is 30 days after start date
         const maxEndFromStart = new Date(start);
         maxEndFromStart.setDate(start.getDate() + 30);
 
         const maxEndFromToday = new Date(today);
         maxEndFromToday.setDate(today.getDate() + 60); // Maximum end date is 60 days from today
 
-        // Set the maxEndDateTime to the earlier of the two (30 days from start or 60 days from today)
+        // Set the maxEndDate to the earlier of the two (30 days from start or 60 days from today)
         const maxAllowedEnd = maxEndFromStart > maxEndFromToday ? maxEndFromToday : maxEndFromStart;
-        maxEndDateTime.value = maxAllowedEnd.toISOString().slice(0, 16); // Format as 'yyyy-MM-ddTHH:mm'
+        maxEndDate.value = maxAllowedEnd.toISOString().slice(0, 10); // Format as 'yyyy-MM-dd'
     }
 });
-
-
 // Assign quiz to selected students
-const assignQuizToStudents = () => {
+const assignQuizToStudents = async () => {
     // Validate required fields
     if (!selectedQuiz.value) {
-        alert('Please select a quiz.');
+        alert('Please select a quiz to assign.');
         return;
     }
-
-    if (!startDateTime.value) {
-        alert('Please select a start date and time.');
+    if (!startDate.value || !endDate.value) {
+        alert('Please select valid start and end dates.');
         return;
     }
+    console.log('sel ', selectedQuiz.value)
 
-    if (!endDateTime.value) {
-        alert('Please select an end date and time.');
-        return;
+
+
+    for (const currStudentId of selectedStudents.value) {
+
+        const assignmentDetails = {
+            quiz_id: selectedQuiz.value,
+            student_id: currStudentId.id,
+            assigned_at: startDate.value,
+            due_at: endDate.value,
+            status: "assigned"
+        };
+
+        console.log('Assigning quiz to students:', assignmentDetails);
+
+
+        const success = await store.dispatch('assignQuiz', assignmentDetails);
+
+        if (success) {
+            console.log('successfully:', success);
+
+        } else {
+            console.warn('Failed', success);
+        }
     }
+    console.log("testing")
 
-    // Ensure end time is after start time and within the limits
-    if (new Date(startDateTime.value) >= new Date(endDateTime.value)) {
-        alert('End time must be later than the start time.');
-        return;
-    }
-
-    // Prepare the data to send to the backend
-    const assignmentData = {
-        quizTitle: selectedQuiz.value,
-        startDateTime: startDateTime.value,
-        endDateTime: endDateTime.value,
-    };
-
-    console.log('Assignment data:', assignmentData);
-
-    // Perform backend action (with Axios, for example)
-    // axios.post('/assign-quiz', assignmentData);
-    // Perform backend action (with Axios, for example)
-    // axios.post('/assign-quiz', assignmentData);
-    selectedStudents.value.forEach((student) => {
-        student.assignedQuizzes.push(selectedQuiz.value);
-    });
+    // Clear selected students and reset fields
     selectedStudents.value = [];
+    selectedQuiz.value = '';
+    startDate.value = '';
+    endDate.value = '';
     showAssignDiv.value = false;
+
 };
 
 // Accept student and move to accepted list
@@ -277,7 +303,7 @@ const acceptStudent = async (id) => {
     // const acceptedStudent = pendingStudents.value.splice(index, 1)[0];
     // acceptedStudents.value.push({ ...acceptedStudent, assignedQuizzes: [], status: 'accepted' });
     try {
-        const success = await store.dispatch('acceptStudent', id);
+        const success = await store.dispatch('acceptAndReject', { id, action: 'accept' });
         if (success) {
             console.log(success)
             await store.dispatch('fetchPendingStudents');
@@ -295,7 +321,7 @@ const rejectStudent = async (id) => {
     // const acceptedStudent = pendingStudents.value.splice(index, 1)[0];
     // acceptedStudents.value.push({ ...acceptedStudent, assignedQuizzes: [], status: 'accepted' });
     try {
-        const success = await store.dispatch('rejectStudent', id);
+        const success = await store.dispatch('acceptAndReject', { id, action: 'reject' });
         if (success) {
             console.log(success)
             await store.dispatch('fetchPendingStudents');
