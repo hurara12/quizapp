@@ -46,7 +46,8 @@
                             <!--c Qusestion and Options  -->
                             <div class="questions-section">
                                 <div class="card mb-2 p-2">
-                                    <h5 class="text-start">{{ currentQuestionIndex + 1 + ". " + currentQuestion.text }}
+                                    <h5 class="text-start">{{ currentQuestionIndex + 1 + ". " +
+                                        currentQuestion.question_text }}
                                     </h5>
                                     <div class="options-container">
                                         <div v-for="(option, index) in currentQuestion.options" :key="index"
@@ -125,6 +126,8 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter, useRoute } from "vue-router";
 import Header from '@/components/HeaderAndLogout.vue'; // 
+import axios from 'axios';
+
 export default {
     name: 'CombinedQuizAndRecording',
     components: {
@@ -146,16 +149,17 @@ export default {
         let quizName = ref('');
         let questionTimer = null;
         let quizTimer = null;
-
+        let quizObject = ref([])
         // === Camera and Recording State Variables ===
         const camera = ref(null);
         const streamRef = ref(null);
         const mediaRecorder = ref(null);
         const recordedChunks = ref([]);
         const isRecording = ref(false);
-
+        let qid = ref(0);
         // === Computed Properties ===
         const currentQuestion = computed(() => {
+            console.log(questions.value[currentQuestionIndex.value]);
             if (questions.value.length === 0) {
                 return { text: 'Loading...', options: [] };
             }
@@ -163,27 +167,64 @@ export default {
         });
 
         // === Lifecycle Hooks ===
-        onMounted(() => {
+        onMounted(async () => {
+            qid = localStorage.getItem("quizId")
+            try {
+                const token = localStorage.getItem("token");
+                const config = {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+                // Fetch quizzes from your db.json (update URL with the correct path to your db.json file)
+                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/view-quizzes`, config);
+                console.log("quiz ", response.data);
+                quizObject = response.data.filter(quiz => quiz.id == qid);
+                console.log("REQ ", quizObject)
+                if (quizObject.length > 0) {
+                    // Assuming you're getting the first filtered quiz
+                    const selectedQuiz = quizObject[0]; // Get the first quiz object
+                    quizName.value = selectedQuiz.title; // Access the title
+
+                    questions.value = selectedQuiz.questions.map(question => {
+                        return {
+                            ...question,
+                            options: JSON.parse(question.options) // Parse the options string into an array
+                        };
+                    });
+
+                    // Logging the result
+                    console.log("quiz name ", quizName.value);
+                    console.log("questions ", questions.value);
+                } else {
+                    console.log("No quiz found with the specified ID.");
+                }
+
+
+            } catch (error) {
+                console.error('Error fetching quizzes:', error);
+            }
+
+
             // Load sample questions
-            quizName.value = "History"
-            questions.value = [
-                {
-                    text: "Which philosopher would start with a tabula rasa and then develop ethical standards?",
-                    options: ["John Locke", "David Geffen", "John Rawls", "Peter Drucker"],
-                    correct: "John Locke",
-                },
-                {
-                    text: "Who wrote the book 'Republic'?",
-                    options: ["Plato", "Aristotle", "Socrates", "Descartes"],
-                    correct: "Plato",
-                },
-                {
-                    text: "Which philosopher is known for the categorical imperative?",
-                    options: ["Immanuel Kant", "David Hume", "Nietzsche", "Bertrand Russell"],
-                    correct: "Immanuel Kant",
-                },
-                // Add more test questions here
-            ];
+            // questions.value = [
+            //     {
+            //         question_text: "Which philosopher would start with a tabula rasa and then develop ethical standards?",
+            //         options: ["John Locke", "David Geffen", "John Rawls", "Peter Drucker"],
+            //         correct_option: "John Locke",
+            //     },
+            //     {
+            //         question_text: "Who wrote the book 'Republic'?",
+            //         options: ["Plato", "Aristotle", "Socrates", "Descartes"],
+            //         correct_option: "Plato",
+            //     },
+            //     {
+            //         question_text: "Which philosopher is known for the categorical imperative?",
+            //         options: ["Immanuel Kant", "David Hume", "Nietzsche", "Bertrand Russell"],
+            //         correct_option: "Immanuel Kant",
+            //     },
+            //     // Add more test questions here
+            // ];
         });
 
         onBeforeUnmount(() => {
@@ -223,7 +264,7 @@ export default {
 
         const nextQuestion = () => {
             // Check if the selected option is correct
-            if (selectedOption.value === currentQuestion.value.correct) {
+            if (selectedOption.value === currentQuestion.value.correct_option) {
                 correctAnswers.value++;
             }
             if (selectedOption.value) attemptedQuestions.value++;
@@ -364,10 +405,11 @@ export default {
             getOptionLabel,
             questions,
             goBack,
-            // === Camera and Recording Data and Methods ===
+            quizObject,
             camera,
             isRecording,
             quizName,
+            qid
         };
     },
 };

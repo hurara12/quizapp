@@ -9,14 +9,18 @@
                             <h5>Available Quizzes</h5>
                         </div>
                         <div class="card-body scrollable-card">
-                            <div v-for="quiz in sortedAvailableQuizzes" :key="quiz.id" class="card mb-2 w-100">
+                            <!-- <div v-for="quiz in Array.isArray(sortedAvailableQuizzes)
+                                ? sortedAvailableQuizzes.filter(quiz => quiz.quiz_id == std_id) // Adjust this condition to your needs
+                                : []" :key="quiz.quiz_id" class="card mb-2 w-100"> -->
+
+                            <div v-for="quiz in sortedAvailableQuizzes" :key="quiz.quiz_id" class="card mb-2 w-100">
                                 <div class="card-body d-flex flex-row">
                                     <div>
-                                        <h5 class="card-title">{{ quiz.name }}</h5>
-                                        <p>Available From: {{ quiz.availableFrom }}</p>
-                                        <p>Due Date: {{ quiz.dueDate }}</p>
+                                        <h5 class="card-title">{{ quiz.quiz_id }}</h5>
+                                        <p>Available From: {{ quiz.assigned_at }}</p>
+                                        <p>Due Date: {{ quiz.due_at }}</p>
                                     </div>
-                                    <button @click="startQuiz(quiz.name)"
+                                    <button @click="startQuiz(quiz.quiz_id)"
                                         class="btn btn-success ms-auto align-self-end">
                                         Start Quiz
                                     </button>
@@ -32,7 +36,7 @@
                             <h5>Recent Quizzes</h5>
                         </div>
                         <div class="card-body scrollable-card">
-                            <div v-for="quiz in sortedRecentQuizzes" :key="quiz.id" class="card mb-2 w-100">
+                            <div v-for="quiz in sortedRecentQuizzes" :key="quiz.quiz_id" class="card mb-2 w-100">
                                 <div class="card-body">
                                     <h5 class="card-title">{{ quiz.name }}</h5>
                                     <p>Score: {{ quiz.score }}%</p>
@@ -47,19 +51,20 @@
                     </div>
                 </div>
 
-      
+
                 <div class="col-sm-12 col-md-6 col-lg-4">
                     <div class="card custom-gap mb-4">
                         <div class="card-header">
                             <h5>Upcoming Quizzes</h5>
                         </div>
                         <div class="card-body scrollable-card">
-                            <div v-for="quiz in sortedUpcomingQuizzes" :key="quiz.id" class="card mb-2 w-100">
+                            <div v-for="quiz in sortedUpcomingQuizzes" :key="quiz.quiz_id" class="card mb-2 w-100">
                                 <div class="card-body">
-                                    <h5 class="card-title">{{ quiz.name }}</h5>
-                                    <p>Available From: {{ quiz.availableFrom }}</p>
-                                    <p>Due Date: {{ quiz.dueDate }}</p>
-                                    <button @click="notifyMe(quiz.name)" class="btn btn-notify mt-2">Notify Me</button>
+                                    <h5 class="card-title">{{ quiz.quiz_id }}</h5>
+                                    <p>Available From: {{ quiz.assigned_at }}</p>
+                                    <p>Due Date: {{ quiz.due_at }}</p>
+                                    <button @click="notifyMe(quiz.quiz_id)" class="btn btn-notify mt-2">Notify
+                                        Me</button>
                                 </div>
                             </div>
                         </div>
@@ -85,13 +90,18 @@ export default {
         const store = useStore();
         const router = useRouter();
         const quizzes = computed(() => store.getters.getAssignedQuiz);
+        let std_id = localStorage.getItem('id');
         //const quizzes = ref([]); // All quizzes from the backend
 
         // Fetch data from the backend
         const fetchData = async () => {
             try {
+
+                console.log("SSStd id ", std_id)
                 await store.dispatch('fetchAssignedQuiz'); // Ensure fetching completes
+                console.log("assigned ", store.getters.getAssignedQuiz);
                 sortedAvailableQuizzes(); // Populate availableQuizzesList after fetch
+                sortedUpcomingQuizzes();
             } catch (error) {
                 console.error('Error fetching quizzes:', error);
             }
@@ -99,12 +109,17 @@ export default {
 
         // Filtering and sorting logic
         const sortedAvailableQuizzes = computed(() => {
+            if (!std_id) return []; // Ensure std_id exists
+
+            console.log("F RUNNING")
             return Array.isArray(quizzes.value)
-                ? quizzes.value.filter(quiz => new Date(quiz.availableFrom) <= new Date() && new Date(quiz.dueDate) > new Date())
-                    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+                ? quizzes.value.filter(quiz =>
+                    quiz.student_id == std_id &&  // Check if quiz_id matches std_id
+                    new Date(quiz.assigned_at) <= new Date() && // Ensure the quiz is available
+                    new Date(quiz.due_at) > new Date()          // Ensure it's not past due
+                ).sort((a, b) => new Date(a.due_at) - new Date(b.assigned_at))
                 : [];
         });
-
 
         const sortedRecentQuizzes = computed(() =>
             quizzes.value
@@ -112,15 +127,22 @@ export default {
                 .sort((a, b) => new Date(b.attemptedOn || b.missedOn) - new Date(a.attemptedOn || a.missedOn))
         );
 
-        const sortedUpcomingQuizzes = computed(() =>
-            quizzes.value
-                .filter(quiz => new Date(quiz.availableFrom) > new Date())
-                .sort((a, b) => new Date(a.availableFrom) - new Date(b.availableFrom))
-        );
+        const sortedUpcomingQuizzes = computed(() => {
+            if (!std_id) return []; // Ensure std_id exists
+
+            return Array.isArray(quizzes.value) ? quizzes.value
+                .filter(quiz =>
+                    quiz.student_id == std_id && new Date(quiz.assigned_at) > new Date() // Filter by student ID and future quizzes
+                )
+                .sort((a, b) => new Date(a.assigned_at) - new Date(b.assigned_at)) // Sort upcoming quizzes by assigned_at
+                : [];
+        });
+
 
         // Methods for button actions
-        const startQuiz = (quizName) => {
-            console.log(`Starting quiz: ${quizName}`);
+        const startQuiz = (quizid) => {
+            console.log(`Starting quiz: ${quizid}`);
+            localStorage.setItem("quizId", quizid)
             router.push('/quizcomponent');
         };
 
@@ -137,6 +159,7 @@ export default {
             sortedUpcomingQuizzes,
             startQuiz,
             notifyMe,
+            std_id,
         };
     },
 };

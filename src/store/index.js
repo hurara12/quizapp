@@ -174,8 +174,9 @@ export default createStore({
         saveToLocalStorage('token_type', token_type); // If you need to store token type
         saveToLocalStorage('expires_in', expires_in); // If you need to handle token expiration
         // Assuming the role comes as response.data.data.name, but confirm this field
-        saveToLocalStorage('role', response.data.data.name);
-        saveToLocalStorage('email', credentials.email);
+        saveToLocalStorage('role', response.data.data.role);
+        saveToLocalStorage('id', response.data.data.studentId);
+        console.log("id ", response.data.data.studentId)
 
         return true;
       } catch (error) {
@@ -271,8 +272,8 @@ export default createStore({
         }
         // Fetch quizzes from your db.json (update URL with the correct path to your db.json file)
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/view-assigned-quizzes`, config);
-        console.log(response.data);
-        commit('quizesData', response.data);
+        console.log("QDATA ", response.data);
+        commit('ViewAssignedQuiz', response.data);
       } catch (error) {
         console.error('Error fetching quizzes:', error);
       }
