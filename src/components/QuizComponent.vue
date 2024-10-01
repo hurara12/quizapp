@@ -92,7 +92,6 @@
                             <button class="btn btn-secondary" @click="skipQuestion(false)">No</button>
                         </div>
 
-                        <!-- Finish Confirmation Modal -->
                         <div v-if="showFinishConfirmation" class="confirmation-modal">
                             <p>You have remaining questions, are you sure you want to finish the quiz?</p>
                             <button class="btn btn-danger me-3" @click="finishQuiz(true)">Yes</button>
@@ -100,14 +99,12 @@
                         </div>
                     </div>
 
-                    <!-- Camera and Microphone Section -->
                     <div v-if="!finished" class="camera-section mt-4 col-lg-4">
                         <div class="camera-box">
                             <video ref="camera" autoplay playsinline class="w-100"></video>
                         </div>
                     </div>
                 </div>
-                <!-- Results Section -->
                 <div v-if="finished" class="start-container">
                     <div class="instruction-card">
                         <h3 class="card-subtitle mb-2 text-muted text-center">Your Quiz is Finished</h3>
@@ -134,7 +131,6 @@ export default {
         Header,
     },
     setup() {
-        // === Quiz State Variables ===
         const router = useRouter();
         const started = ref(false);
         const finished = ref(false);

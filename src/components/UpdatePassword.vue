@@ -3,12 +3,10 @@
         <div class="container mt-5">
             <Header title="Update Your Profile" />
             <div class="row justify-content-center ">
-                <!-- Set appropriate column sizes for different screen widths -->
                 <div class="col-12 col-md-8 col-lg-6 profile-section">
                     <h3 class="text-center text-muted mb-4">Set Password</h3>
                     <form @submit.prevent="updatePassword">
                         <div class="row">
-                            <!-- New Password Field -->
                             <div class="col-12">
                                 <div class="form-floating mb-3">
                                     <input type="password" class="form-control" id="newPassword" v-model="newPassword"
@@ -18,7 +16,6 @@
                             </div>
                         </div>
                         <div class="row">
-                            <!-- Confirm New Password Field -->
                             <div class="col-12">
                                 <div class="form-floating mb-3">
                                     <input type="password" class="form-control" id="confirmNewPassword"
@@ -29,7 +26,6 @@
                         </div>
                         <div class="row">
                             <div class="col-12">
-                                <!-- Error or Success Messages -->
                                 <div v-if="errorMessage" class="alert alert-danger" role="alert">
                                     {{ errorMessage }}
                                 </div>
@@ -40,7 +36,6 @@
                         </div>
                         <div class="row">
                             <div class="col-12">
-                                <!-- Update Password Button -->
                                 <button class="btn w-100" type="submit">
                                     Update Password
                                 </button>
@@ -67,10 +62,8 @@ const successMessage = ref('');
 
 const updatePassword = async () => {
     try {
-        // Clear messages
         errorMessage.value = '';
         successMessage.value = '';
-        // Validate passwords
         if (newPassword.value !== confirmNewPassword.value) {
             errorMessage.value = 'Passwords do not match';
             return;
@@ -78,9 +71,8 @@ const updatePassword = async () => {
         const success = await store.dispatch('updatePassword', newPassword.value);
         if (success) {
 
-            // Passwords match, proceed with the update logic here
+            
             successMessage.value = 'Password updated successfully!';
-            // Reset inputs
             newPassword.value = '';
             confirmNewPassword.value = '';
             setTimeout(() => {

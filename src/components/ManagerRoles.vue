@@ -77,9 +77,9 @@
 
 <script setup>
 import { reactive, ref, onMounted } from 'vue';
-import axios from 'axios'; 
+import axios from 'axios';
 import { useStore } from 'vuex';
-import Header from '@/components/HeaderAndLogout.vue'; 
+import Header from '@/components/HeaderAndLogout.vue';
 
 const store = useStore();
 
@@ -100,8 +100,8 @@ const addRole = async () => {
     try {
         const success = await store.dispatch('addRole', formData);
         if (success) {
-            users.value.push({ ...formData }); // Add  new role
-            resetForm(); // Reset form after adding
+            users.value.push({ ...formData });
+            resetForm();
         }
     } catch (error) {
         console.error('Error adding role:', error);

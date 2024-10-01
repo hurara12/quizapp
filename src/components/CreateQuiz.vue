@@ -19,7 +19,13 @@
 
                             <div class="quiz-section overflow-height">
                                 <div v-for="(question, index) in quiz.questions" :key="index" class="card mb-4 p-3">
-                                    <h5>Question {{ index + 1 }}</h5>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h5>Question {{ index + 1 }}</h5>
+                                        <button type="button" class="btn btn-outline-danger btn-sm py-0"
+                                            @click="removeQuestion(index)" :disabled="quiz.questions.length === 1">
+                                            x
+                                        </button>
+                                    </div>
                                     <div class="input-box input-group mb-2">
                                         <div class="form-floating">
                                             <textarea style="resize:none;" class="form-control"
@@ -88,12 +94,12 @@
                                 <button type="button" class="btn btn-success bg-gradient me-2" @click="addQuestion">+
                                     Add
                                     Question</button>
-                                <button type="button" class="btn btn-danger bg-gradient" @click="removeLastQuestion">-
-                                    Remove Last
-                                    Question</button>
+                                <button type="button" class="btn btn-danger bg-gradient" @click="removeLastQuestion"
+                                    :disabled="quiz.questions.length === 1">
+                                    - Remove Last Question</button>
                             </div>
                             <div class="mt-2">
-                                <button type="submit" class="btn btn-info w-100">
+                                <button type="submit" :disabled="!isQuizNameAdded" class="btn btn-info w-100">
                                     {{ isEditing ? 'Update Quiz' : 'Create Quiz' }}
                                 </button>
                             </div>
@@ -137,10 +143,9 @@ export default {
         Header,
     },
     setup() {
-        const isQuizNameAdded = ref(false);
         let quizid = ref('');
         const store = useStore();
-
+        const isQuizNameAdded = ref(false);
         const quiz = ref({
             name: "",
             quiz_id: '',
@@ -162,7 +167,35 @@ export default {
             return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
         };
         const now = new Date();
+        // const addQuiz = async () => {
+        //     if (quiz.value.name.trim() === "") {
+        //         alert("Quiz name is required");
+        //         return;
+        //     }
+        //     isQuizNameAdded.value = true;
+        //     const quizName = {
+        //         title: quiz.value.name,  // Ensure correct concatenation
+        //         scheduled_at: formatDate(now),
+        //         expires_at: formatDate(now),
+        //     }
+        //     console.log("QQ ", quizName)
+        //     try {
+        //         const success = await store.dispatch('addQuiz', quizName);
+        //         if (success) {
+        //             quiz.value.quiz_id = success; // Set the quiz ID received from the API
+        //             console.log('Quiz ID received: ', quiz.value.quiz_id);
+        //         }
+        //     } catch (error) {
+        //         console.error('Error submitting profile:', error);
+        //     }
 
+        // };
+        const deleteQuizFromApi = async () => {
+
+        }
+        const updateQuiz = async () => {
+
+        }
         const addQuiz = async () => {
             if (quiz.value.name.trim() === "") {
                 alert("Quiz name is required");
@@ -218,7 +251,81 @@ export default {
             } catch (error) {
                 console.error('Error adding questions:', error);
             }
+            console.log("TESTING WHEN IT IS PRINTING")
         };
+        // const createQuizoApi = async () => {
+        //     // Ensure the quiz name is provided creating quiz name also
+        //     if (quiz.value.name.trim() === "") {
+        //         alert("Quiz name is required");
+        //         return;
+        //     }
+
+        //     // Mark that the quiz name has been added
+
+        //     // Prepare quiz data
+        //     const quizName = {
+        //         title: quiz.value.name,
+        //         scheduled_at: formatDate(now),
+        //         expires_at: formatDate(now),
+        //     };
+        //     console.log("Creating Quiz: ", quizName);
+
+        //     try {
+        //         // Dispatch the action to add the quiz
+        //         const success = await store.dispatch('addQuiz', quizName);
+        //         if (success) {
+        //             quiz.value.quiz_id = success; // Set the quiz ID received from the API
+        //             console.log('Quiz ID received: ', quiz.value.quiz_id);
+
+        //             // Proceed to add the questions if they exist
+        //             if (quiz.value.questions && quiz.value.questions.length > 0) {
+        //                 const quiz_id = quiz.value.quiz_id;
+
+        //                 // Check structure of each question before adding
+        //                 console.log("Questions array:", quiz.value.questions);
+
+        //                 for (const question of quiz.value.questions) {
+        //                     // Debugging log to check the structure of each question
+        //                     console.log("Processing question: ", question);
+
+        //                     const { question_text, options, correct_option } = question;
+
+        //                     // Ensure question_text, options, and correct_option exist
+        //                     if (!question_text || !options || correct_option === undefined) {
+        //                         console.warn('Question data is incomplete: ', question);
+        //                         continue; // Skip this question if data is incomplete
+        //                     }
+
+        //                     // Prepare the question data
+        //                     const q = {
+        //                         question_text,
+        //                         options,
+        //                         correct_option,
+        //                         quiz_id // Use the quiz_id obtained from addQuiz
+        //                     };
+
+        //                     console.log("Adding Question: ", q);
+
+        //                     // Dispatch the action to add the question
+        //                     const questionSuccess = await store.dispatch('addQuestion', q);
+
+        //                     if (questionSuccess) {
+        //                         console.log('Question added successfully:', questionSuccess);
+        //                     } else {
+        //                         console.warn('Failed to add question:', questionSuccess);
+        //                     }
+        //                 }
+        //             } else {
+        //                 console.warn('No questions available to add.');
+        //             }
+        //         } else {
+        //             console.warn('Failed to create the quiz.');
+        //         }
+        //     } catch (error) {
+        //         console.error('Error during quiz creation or question addition:', error);
+        //     }
+        // };
+
 
         // const addQuestionToApi = async () => {
         //     try {
@@ -299,7 +406,11 @@ export default {
                 quiz_id: '',
             });
         };
-
+        const removeQuestion = (index) => {
+            if (quiz.value.questions.length > 1) {
+                quiz.value.questions.splice(index, 1);
+            }
+        };
         const removeLastQuestion = () => {
             if (quiz.value.questions.length > 1) {
                 quiz.value.questions.pop();
@@ -364,10 +475,11 @@ export default {
             createOrUpdateQuiz,
             editQuiz,
             deleteQuiz,
+            removeQuestion,
             isEditing,
+            quizid,
             isQuizNameAdded,
             addQuiz,
-            quizid,
         };
     },
 };

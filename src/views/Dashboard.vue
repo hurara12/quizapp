@@ -30,6 +30,7 @@ export default {
   components: {
     Header,
   },
+
   setup() {
     const buttons = ref([
       { title: "Manager Roles", description: "View and Edit Manager requests.", link: "/managerroles" },
@@ -44,6 +45,9 @@ export default {
     const store = useStore();
     const isLoggingOut = ref(false);
 
+    // onMounted(() => {
+    //   route.meta.handleBackNavigation = handleBackNavigation; // Assign it to meta for later access
+    // });
 
     const handleCardClick = (index) => {
       console.log(`Card ${index + 1} clicked`); // Placeholder for handling card clicks
@@ -54,6 +58,7 @@ export default {
       isLoggingOut,
       handleCardClick
     };
+
   }
 };
 </script>

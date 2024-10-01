@@ -95,8 +95,9 @@
                     <div class="card-container"
                         :style="{ maxHeight: showAssignDiv ? '840px' : '500px', overflowY: 'auto' }">
                         <div class="card mb-3"
-                            v-for="(student, index) in pendingStudents.filter(student => student.status === 'pending')"
+                            v-for="(student, index) in Array.isArray(pendingStudents) ? pendingStudents.filter(student => student.status === 'pending') : []"
                             :key="index">
+
                             <div class="card-body">
                                 <h5 class="card-title firstCapital"><strong>Name:</strong> {{ student.name }}</h5>
                                 <p class="card-text"><strong>Email:</strong> {{ student.email }}</p>
@@ -139,10 +140,11 @@ let loadingComp = ref({});
 let loadingCompReject = ref({});
 
 onMounted(async () => {
-    store.dispatch('fetchPendingStudents');
+
     try {
-        await store.dispatch('fetchQuizzes'); // Ensure fetching completes
-        availableQuizzes(); // Populate availableQuizzesList after fetch
+        await store.dispatch('fetchPendingStudents');
+        await store.dispatch('fetchQuizzes'); 
+        availableQuizzes(); 
     } catch (error) {
         console.error('Error fetching quizzes:', error);
     }
@@ -152,43 +154,12 @@ onMounted(async () => {
 
 const pendingStudents = computed(() => store.getters.pendingStudents);
 const quizList = computed(() => store.getters.quizesData);
-// const pendingStudents = computed(() => [
-//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
-//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
-//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
-//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
-//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
-//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
-//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
-//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
-//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
-//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
-//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
-//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
-//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
-//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
-//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
-//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
-//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
-//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
-//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
-//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
-//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
-//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
-//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
-//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
-//     { id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'pending', cv_file: 'https://example.com/cv1.pdf' },
-//     { id: 2, name: 'Bob Johnson', email: 'bob@example.com', status: 'accepted', cv_file: 'https://example.com/cv2.pdf' },
-//     { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'rejected', cv_file: 'https://example.com/cv3.pdf' },
 
-// ]);
-
-const availableQuizzesList = ref([]); // This will store available quizzes
+const availableQuizzesList = ref([]);
 
 const availableQuizzes = () => {
     console.log("Available Quizzes Triggered");
     if (quizList.value && quizList.value.length > 0) {
-        // Map only the 'id' and 'title' from quizList
         console.log("Quizzes: ", quizList.value);
         availableQuizzesList.value = quizList.value.map(quiz => ({
             id: quiz.id,
@@ -214,42 +185,33 @@ const toggleQuizAssignment = (student) => {
     showAssignDiv.value = selectedStudents.value.length > 0;
 };
 
-// Minimum date: today's date
 const minDate = ref(new Date().toISOString().slice(0, 10));
 
-// Maximum start date: 30 days from today
 const today = new Date();
 const maxStartDateValue = new Date(today);
 maxStartDateValue.setDate(today.getDate() + 30);
-const maxStartDate = ref(maxStartDateValue.toISOString().slice(0, 10)); // Start date limit: 30 days from today
+const maxStartDate = ref(maxStartDateValue.toISOString().slice(0, 10));
 
-// Maximum end date (dynamically set based on start date)
 const maxEndDate = ref('');
 
-// Reactive properties for start and end dates
 const startDate = ref('');
 const endDate = ref('');
 
-// Watch the startDate value and calculate the max allowed endDate (30 days from start)
 watch(startDate, (newStart) => {
     if (newStart) {
         const start = new Date(newStart);
 
-        // Maximum end date is 30 days after start date
         const maxEndFromStart = new Date(start);
         maxEndFromStart.setDate(start.getDate() + 30);
 
         const maxEndFromToday = new Date(today);
-        maxEndFromToday.setDate(today.getDate() + 60); // Maximum end date is 60 days from today
+        maxEndFromToday.setDate(today.getDate() + 60);
 
-        // Set the maxEndDate to the earlier of the two (30 days from start or 60 days from today)
         const maxAllowedEnd = maxEndFromStart > maxEndFromToday ? maxEndFromToday : maxEndFromStart;
-        maxEndDate.value = maxAllowedEnd.toISOString().slice(0, 10); // Format as 'yyyy-MM-dd'
+        maxEndDate.value = maxAllowedEnd.toISOString().slice(0, 10);
     }
 });
-// Assign quiz to selected students
 const assignQuizToStudents = async () => {
-    // Validate required fields
     if (!selectedQuiz.value) {
         alert('Please select a quiz to assign.');
         return;
@@ -275,7 +237,7 @@ const assignQuizToStudents = async () => {
         console.log('Assigning quiz to students:', assignmentDetails);
 
 
-        const success = await store.dispatch('assignQuiz', assignmentDetails);
+        const success = await store.dispatch('assignQuizzes', assignmentDetails);
 
         if (success) {
             console.log('successfully:', success);
@@ -286,7 +248,6 @@ const assignQuizToStudents = async () => {
     }
     console.log("testing")
 
-    // Clear selected students and reset fields
     selectedStudents.value = [];
     selectedQuiz.value = '';
     startDate.value = '';
@@ -295,13 +256,10 @@ const assignQuizToStudents = async () => {
 
 };
 
-// Accept student and move to accepted list
+
 const acceptStudent = async (id) => {
     console.log(id);
     loadingComp.value[id] = true;
-    // store.dispatch('acceptStudent', email);
-    // const acceptedStudent = pendingStudents.value.splice(index, 1)[0];
-    // acceptedStudents.value.push({ ...acceptedStudent, assignedQuizzes: [], status: 'accepted' });
     try {
         const success = await store.dispatch('acceptAndReject', { id, action: 'accept' });
         if (success) {
@@ -317,9 +275,6 @@ const acceptStudent = async (id) => {
 const rejectStudent = async (id) => {
     console.log(id);
     loadingCompReject.value[id] = true;
-    // store.dispatch('acceptStudent', email);
-    // const acceptedStudent = pendingStudents.value.splice(index, 1)[0];
-    // acceptedStudents.value.push({ ...acceptedStudent, assignedQuizzes: [], status: 'accepted' });
     try {
         const success = await store.dispatch('acceptAndReject', { id, action: 'reject' });
         if (success) {
@@ -333,21 +288,15 @@ const rejectStudent = async (id) => {
     }
 };
 
-// Reject student and move to rejected list
-// Reject student and move to rejected list
-
-
-// Filter students based on search query and status
 const filteredStudents = computed(() => {
-    return pendingStudents.value.filter(student => {
+    return Array.isArray(pendingStudents.value) ? pendingStudents.value.filter(student => {
         const matchesQuery = student.name.toLowerCase().includes(searchQuery.value.toLowerCase())
             || student.email.toLowerCase().includes(searchQuery.value.toLowerCase())
-            || student.status.toLowerCase().includes(searchQuery.value.toLowerCase())
+            || student.status.toLowerCase().includes(searchQuery.value.toLowerCase());
         return matchesQuery && student.status === filterStatus.value;
-    });
+    }) : [];
 });
 
-// Check if the quiz is already assigned to the student
 const isQuizAlreadyAssigned = (student) => {
     return false;
 };

@@ -1,11 +1,10 @@
 <template>
     <ul class="pagination">
-        <!-- Previous Page Button -->
         <li class="page-item" :class="{ disabled: currentPage === 1 }">
             <a class="page-link" href="#" @click.prevent="prevPage">Previous</a>
         </li>
 
-        <!-- First page and ellipsis if needed -->
+
         <li v-if="currentPage > 3" class="page-item">
             <a class="page-link" href="#" @click.prevent="goToPage(1)">1</a>
         </li>
@@ -14,12 +13,10 @@
             <span class="page-link">...</span>
         </li>
 
-        <!-- Visible pages -->
         <li v-for="page in visiblePages" :key="page" class="page-item" :class="{ active: currentPage === page }">
             <a class="page-link" href="#" @click.prevent="goToPage(page)">{{ page }}</a>
         </li>
 
-        <!-- Last page and ellipsis if needed -->
         <li v-if="currentPage < totalPages - 2" class="page-item disabled">
             <span class="page-link">...</span>
         </li>
@@ -27,7 +24,6 @@
             <a class="page-link" href="#" @click.prevent="goToPage(totalPages)">{{ totalPages }}</a>
         </li>
 
-        <!-- Next Page Button -->
         <li class="page-item" :class="{ disabled: currentPage === totalPages }">
             <a class="page-link" href="#" @click.prevent="nextPage">Next</a>
         </li>
