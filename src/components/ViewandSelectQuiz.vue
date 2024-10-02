@@ -102,6 +102,19 @@ export default {
                 console.log("assigned ", store.getters.getAssignedQuiz);
                 sortedAvailableQuizzes(); // Populate availableQuizzesList after fetch
                 sortedUpcomingQuizzes();
+
+                // const token = localStorage.getItem("token");
+                // const config = {
+                //     headers: {
+                //         Authorization: `Bearer ${token}`
+                //     }
+                // }
+
+                // const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/view-quizzes`, config);
+                // console.log("quiz ", response.data);
+
+
+
             } catch (error) {
                 console.error('Error fetching quizzes:', error);
             }
@@ -113,8 +126,7 @@ export default {
 
             console.log("F RUNNING")
             return Array.isArray(quizzes.value)
-                ? quizzes.value.filter(quiz =>
-                    quiz.student_id == std_id &&  // Check if quiz_id matches std_id
+                ? quizzes.value.filter(quiz => quiz.student_id == std_id && quiz.status === 'assigned' &&  // Check if quiz_id matches std_id
                     new Date(quiz.assigned_at) <= new Date() && // Ensure the quiz is available
                     new Date(quiz.due_at) > new Date()          // Ensure it's not past due
                 ).sort((a, b) => new Date(a.due_at) - new Date(b.assigned_at))
@@ -123,7 +135,7 @@ export default {
 
         const sortedRecentQuizzes = computed(() =>
             quizzes.value
-                .filter(quiz => quiz.status === 'attempted' || quiz.status === 'missed')
+                .filter(quiz => quiz.status === 'in-progress' || quiz.status === 'completed')
                 .sort((a, b) => new Date(b.attemptedOn || b.missedOn) - new Date(a.attemptedOn || a.missedOn))
         );
 
@@ -132,7 +144,7 @@ export default {
 
             return Array.isArray(quizzes.value) ? quizzes.value
                 .filter(quiz =>
-                    quiz.student_id == std_id && new Date(quiz.assigned_at) > new Date() // Filter by student ID and future quizzes
+                    quiz.student_id == std_id && quiz.status === 'assigned' && new Date(quiz.assigned_at) > new Date() // Filter by student ID and future quizzes
                 )
                 .sort((a, b) => new Date(a.assigned_at) - new Date(b.assigned_at)) // Sort upcoming quizzes by assigned_at
                 : [];

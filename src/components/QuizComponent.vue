@@ -237,6 +237,7 @@ export default {
 
         // === Quiz Methods ===
         const startQuizAndRecording = async () => {
+            
             started.value = true;
             startTimers();
             await startRecording(); // Start recording when quiz starts

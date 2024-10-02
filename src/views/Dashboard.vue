@@ -4,7 +4,7 @@
       <Header title="Dashboard" />
 
       <div class="row mt-4">
-        <div class="col-lg-4 col-md-6 col-12 mb-4" v-for="(button, index) in buttons" :key="index">
+        <div class="col mb-4" :class="getColClass(buttons.length)" v-for="(button, index) in buttons" :key="index">
           <div class="card text-center h-100" @click="handleCardClick(index)">
             <div class="card-body">
               <h5 class="card-title">{{ button.title }}</h5>
@@ -20,7 +20,7 @@
 
 
 <script>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import Header from '@/components/HeaderAndLogout.vue'; // 
@@ -32,19 +32,42 @@ export default {
   },
 
   setup() {
-    const buttons = ref([
+
+    const userRole = computed(() => localStorage.getItem("role"));
+
+    const adminButtons = [
       { title: "Manager Roles", description: "View and Edit Manager requests.", link: "/managerroles" },
       { title: "Manage Students", description: "Manage Student and assign Quiz", link: "/managestudents" },
       { title: "View Results", description: "Check quiz results.", link: "/viewresult" },
       { title: "Quiz", description: "Create and Manage Quiz", link: "/createquiz" },
-      { title: "Update Profile", description: "Update your Password", link: "/updatepassword" },
-      { title: "Attempt Quiz", description: "View and attempt Quizes", link: "/viewandselectquiz" },
-    ]);
+      { title: "Update Profile", description: "Update your Password", link: "/updatepassword" }
+    ];
+    const managerButtons = [
+      { title: "Manage Students", description: "Manage Student and assign Quiz", link: "/managestudents" },
+      { title: "View Results", description: "Check quiz results.", link: "/viewresult" },
+      { title: "Quiz", description: "Create and Manage Quiz", link: "/createquiz" },
+      { title: "Update Profile", description: "Update your Password", link: "/updatepassword" }
+    ];
+
+    const studentButtons = [
+      { title: "Attempt Quiz", description: "View and attempt Quizzes", link: "/viewandselectquiz" },
+      { title: "View Results", description: "Check quiz results.", link: "/viewresult" },
+      { title: "Update Profile", description: "Update your Password", link: "/updatepassword" }
+    ];
 
     const router = useRouter();
     const store = useStore();
     const isLoggingOut = ref(false);
-
+    const buttons = computed(() => {
+      if (userRole.value === 'admin') {
+        return adminButtons;
+      } else if (userRole.value === 'student') {
+        return studentButtons;
+      } else if (userRole.value === 'manager') {
+        return managerButtons;
+      }
+      return [];
+    });
     // onMounted(() => {
     //   route.meta.handleBackNavigation = handleBackNavigation; // Assign it to meta for later access
     // });
@@ -52,11 +75,18 @@ export default {
     const handleCardClick = (index) => {
       console.log(`Card ${index + 1} clicked`); // Placeholder for handling card clicks
     };
+    const getColClass = (numButtons) => {
+      if (numButtons % 3 === 0) {
+        return 'col-lg-4 col-md-6 col-12'; // 3 per row
+      }
+      return 'col-lg-6 col-md-6 col-12'; // 2 per row
+    };
 
     return {
       buttons,
       isLoggingOut,
-      handleCardClick
+      handleCardClick,
+      getColClass
     };
 
   }
